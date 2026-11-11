@@ -1,0 +1,122 @@
+# ============================================================
+# 小蚁相机参数范围清单（由 Camera_all_options.py 抓取）
+#
+# 每行格式：{ "rval": 0, "msg_id": 3, "param": [ { "参数名": "类型:值1#值2..." } ] }
+#   settable  = 可设置参数，"#" 分隔的是合法取值
+#   readonly  = 只读参数，无法写入
+#   settable: 后面为空 = 可自由填写任意字符串（如 WiFi 名称/密码）
+#
+# 想修改某个参数时，到 options.txt 中取消对应行的 # 注释，
+# 再用 Camera_set.py 下发即可。
+# ============================================================
+
+# 相机时钟。settable 值即"当前相机时间"；写 {"msg_id":2,"type":"camera_clock","param":"YYYY-MM-DD HH:MM:SS"} 即可把相机时间设为指定值
+{ "rval": 0, "msg_id": 3, "param": [ { "camera_clock": "settable:2026-11-11 16:37:21" } ] }
+# 视频制式：NTSC / PAL。它决定可选的帧率与部分分辨率（NTSC 有 60P/120P，PAL 有 48P/24P），切换制式后 video_resolution 可能被强制改动
+{ "rval": 0, "msg_id": 3, "param": [ { "video_standard": "settable:NTSC#PAL" } ] }
+# 只读：相机当前工作状态。idle=空闲、vf=取景预览中、record/recording=录像中、capture=拍照中、precise_cont_capturing=延时摄影进行中、burst_capturing=连拍中、precise_capturing=定时拍摄中、operation_done=操作完成
+{ "rval": 0, "msg_id": 3, "param": [ { "app_status": "readonly:idle#vf#record#recording#capture#precise_cont_capturing#burst_capturing#precise_capturing#operation_done" } ] }
+# 录像分辨率（含帧率与画幅）。受 video_standard 限制：60P/120P/240P 仅 NTSC，48P/24P 仅 PAL；2304x1296 30P 为宽屏 16:9
+{ "rval": 0, "msg_id": 3, "param": [ { "video_resolution": "settable:1920x1080 60P 16:9#1920x1080 30P 16:9#1920x1080 48P 16:9#1920x1080 24P 16:9#2304x1296 30P 16:9#1280x960 60P 4:3#1280x960 48P 4:3#1280x720 60P 16:9#1280x720 48P 16:9#1280x720 120P 16:9#848x480 240P 16:9" } ] }
+# 视频水印：off=不叠加、date=仅日期、time=仅时间、date/time=日期+时间（写入时斜杠要转义成 \/）
+{ "rval": 0, "msg_id": 3, "param": [ { "video_stamp": "settable:off#date#time#date\/time" } ] }
+# 录像画质：S.Fine=超精细、Fine=精细、Normal=普通
+{ "rval": 0, "msg_id": 3, "param": [ { "video_quality": "settable:S.Fine#Fine#Normal" } ] }
+# 缩时录像（每 N 秒只保留一帧，成片仍按正常帧率播放）：off=关闭，其余为抽帧间隔秒数（0.5/1/2/5/10/30/60 秒）
+{ "rval": 0, "msg_id": 3, "param": [ { "timelapse_video": "settable:off#0.5#1#2#5#10#30#60" } ] }
+# 拍照模式：precise quality=单拍、precise quality cont.=延时摄影（连续）、burst quality=连拍、precise self quality=定时自拍
+{ "rval": 0, "msg_id": 3, "param": [ { "capture_mode": "settable:precise quality#precise quality cont.#burst quality#precise self quality" } ] }
+# 照片分辨率：16M/13M/8M/5M 为 4:3 画幅，12M (4608x2592) 为 16:9 宽幅
+{ "rval": 0, "msg_id": 3, "param": [ { "photo_size": "settable:16M (4608x3456 4:3)#13M (4128x3096 4:3)#8M (3264x2448 4:3)#5M (2560x1920 4:3)#12M (4608x2592 16:9)" } ] }
+# 照片水印：off=不叠加、date=仅日期、time=仅时间、date/time=日期+时间
+{ "rval": 0, "msg_id": 3, "param": [ { "photo_stamp": "settable:off#date#time#date\/time" } ] }
+# 照片画质：S.Fine=超精细、Fine=精细、Normal=普通
+{ "rval": 0, "msg_id": 3, "param": [ { "photo_quality": "settable:S.Fine#Fine#Normal" } ] }
+# 只读：照片延时（每 2 秒一张）状态，off=未启用、2=每 2 秒拍摄
+{ "rval": 0, "msg_id": 3, "param": [ { "timelapse_photo": "readonly:off#2" } ] }
+# 实时预览（取流）开关：on=允许 rtsp 直播与手机取景、off=关闭以省电/提速
+{ "rval": 0, "msg_id": 3, "param": [ { "preview_status": "settable:on#off" } ] }
+# 蜂鸣器音量：high=高、low=低、mute=静音
+{ "rval": 0, "msg_id": 3, "param": [ { "buzzer_volume": "settable:high#low#mute" } ] }
+# 定位提示音（寻找相机时响铃）开关：on=开、off=关
+{ "rval": 0, "msg_id": 3, "param": [ { "buzzer_ring": "settable:on#off" } ] }
+# 开机/按硬件按键进入拍摄时默认使用的拍照模式（取值同 capture_mode）
+{ "rval": 0, "msg_id": 3, "param": [ { "capture_default_mode": "settable:precise quality#precise quality cont.#burst quality#precise self quality" } ] }
+# 延时摄影（连续拍摄）两张照片之间的间隔：0.5 ~ 60 秒
+{ "rval": 0, "msg_id": 3, "param": [ { "precise_cont_time": "settable:0.5 sec#1.0 sec#2.0 sec#5.0 sec#10.0 sec#30.0 sec#60.0 sec" } ] }
+# 连拍张数/速率：3 p/s=每秒 3 张、5 p/s=每秒 5 张、7 p/s=每秒 7 张、7 p/2s=每 2 秒 7 张
+{ "rval": 0, "msg_id": 3, "param": [ { "burst_capture_number": "settable:3 p \/ s#5 p \/ s#7 p \/ s#7 p \/ 2s" } ] }
+# WiFi 名称（SSID）。settable 为空表示可任意填写字符串；应用后需重启相机才生效
+{ "rval": 0, "msg_id": 3, "param": [ { "wifi_ssid": "settable:" } ] }
+# WiFi 密码。settable 为空表示可任意填写字符串；应用后需重启相机才生效
+{ "rval": 0, "msg_id": 3, "param": [ { "wifi_password": "settable:" } ] }
+# 指示灯模式：all enable=全部开启、all disable=全部关闭、status enable=仅状态灯开启
+{ "rval": 0, "msg_id": 3, "param": [ { "led_mode": "settable:all enable#all disable#status enable" } ] }
+# 测光模式：center=中央重点测光、average=平均测光、spot=点测光
+{ "rval": 0, "msg_id": 3, "param": [ { "meter_mode": "settable:center#average#spot" } ] }
+# 只读：存储卡状态，insert=已插入、no=未插入（取值由相机上报）
+{ "rval": 0, "msg_id": 3, "param": [ { "sd_card_status": "readonly:" } ] }
+# 视频输出设备：hdmi=HDMI 输出、tv=经 USB 的 AV 输出、off=关闭（使用 SJ4000 同款线材）
+{ "rval": 0, "msg_id": 3, "param": [ { "video_output_dev_type": "settable:hdmi#tv#off" } ] }
+# 只读：固件（软件）版本号
+{ "rval": 0, "msg_id": 3, "param": [ { "sw_version": "readonly:" } ] }
+# 只读：硬件版本号
+{ "rval": 0, "msg_id": 3, "param": [ { "hw_version": "readonly:" } ] }
+# 只读：双码流状态（是否同时提供高清与低清两路流）
+{ "rval": 0, "msg_id": 3, "param": [ { "dual_stream_status": "readonly:" } ] }
+# 只读：取流（RTSP 直播）状态
+{ "rval": 0, "msg_id": 3, "param": [ { "streaming_status": "readonly:" } ] }
+# 只读：延时摄影是否正在拍摄中，on=进行中、off=已停止
+{ "rval": 0, "msg_id": 3, "param": [ { "precise_cont_capturing": "readonly:" } ] }
+# 只读：PIV 功能（多机同步逐帧/子弹时间）是否启用
+{ "rval": 0, "msg_id": 3, "param": [ { "piv_enable": "readonly:" } ] }
+# 低光自动增曝：on=光线不足时自动延长曝光时间、off=关闭
+{ "rval": 0, "msg_id": 3, "param": [ { "auto_low_light": "settable:on#off" } ] }
+# 循环录像（行车记录仪式）：on=存储卡满了覆盖最旧文件、off=满了停止录像
+{ "rval": 0, "msg_id": 3, "param": [ { "loop_record": "settable:on#off" } ] }
+# 鱼眼矫正：on=开启矫正（画面无鱼眼）、off=关闭矫正（保留原始鱼眼）
+{ "rval": 0, "msg_id": 3, "param": [ { "warp_enable": "settable:on#off" } ] }
+# 只读：本机固件是否支持低光自动增曝功能
+{ "rval": 0, "msg_id": 3, "param": [ { "support_auto_low_light": "readonly:" } ] }
+# 定时拍照（自拍）延迟时间：3s / 5s / 10s / 15s
+{ "rval": 0, "msg_id": 3, "param": [ { "precise_selftime": "settable:3s#5s#10s#15s" } ] }
+# 定时自拍运行状态：on=计时拍摄中、off=未启用（切到定时拍照模式时由相机维护）
+{ "rval": 0, "msg_id": 3, "param": [ { "precise_self_running": "settable:on#off" } ] }
+# 自动关机（无操作休眠）：off=不自动关机、3/5/10 minutes=无操作 3/5/10 分钟后关机
+{ "rval": 0, "msg_id": 3, "param": [ { "auto_power_off": "settable:off#3 minutes#5 minutes#10 minutes" } ] }
+# 只读：相机序列号（专家模式会用它与设备绑定，开启专家模式后存入配置文件）
+{ "rval": 0, "msg_id": 3, "param": [ { "serial_number": "readonly:" } ] }
+# 当前硬件触发模式：capture=拍照模式、record=录像模式
+{ "rval": 0, "msg_id": 3, "param": [ { "system_mode": "settable:capture#record" } ] }
+# 开机时硬件触发进入的默认模式：capture=拍照、record=录像
+{ "rval": 0, "msg_id": 3, "param": [ { "system_default_mode": "settable:capture#record" } ] }
+# 开机时是否自动开启 WiFi：on=是、off=否（关闭可省电，需要用 App/脚本时会被动开启）
+{ "rval": 0, "msg_id": 3, "param": [ { "start_wifi_while_booted": "settable:on#off" } ] }
+# 只读：快速录像（开机即录）最长时长
+{ "rval": 0, "msg_id": 3, "param": [ { "quick_record_time": "readonly:" } ] }
+# 只读：定时自拍剩余倒计时
+{ "rval": 0, "msg_id": 3, "param": [ { "precise_self_remain_time": "readonly:" } ] }
+# 只读：存储卡是否需要格式化，no-need=无需格式化（其他值表示需要格式化）
+{ "rval": 0, "msg_id": 3, "param": [ { "sdcard_need_format": "readonly:" } ] }
+# 视频旋转 180°：on=画面倒转（相机倒置安装时使用）、off=正常
+{ "rval": 0, "msg_id": 3, "param": [ { "video_rotate": "settable:off#on" } ] }
+# 碰撞紧急文件保护：on=检测到震动时锁定当前文件（行车记录仪用，配合 loop_record 防覆盖）、off=关闭
+{ "rval": 0, "msg_id": 3, "param": [ { "emergency_file_backup": "settable:on#off" } ] }
+# OSD 信息叠加：on=在 HDMI/AV 输出画面上叠加状态信息、off=不叠加
+{ "rval": 0, "msg_id": 3, "param": [ { "osd_enable": "settable:on#off" } ] }
+# 开机默认录像模式：record=普通录像、record_timelapse=缩时录像
+{ "rval": 0, "msg_id": 3, "param": [ { "rec_default_mode": "settable:record#record_timelapse" } ] }
+# 当前录像模式：record=普通录像、record_timelapse=缩时录像
+{ "rval": 0, "msg_id": 3, "param": [ { "rec_mode": "settable:record#record_timelapse" } ] }
+# 缩时录像单段时长/抽帧间隔（秒）：5 / 10 / 30 / 60
+{ "rval": 0, "msg_id": 3, "param": [ { "record_photo_time": "settable:5#10#30#60" } ] }
+# 只读：设备功能位掩码（各功能是否开启的开关集合）
+{ "rval": 0, "msg_id": 3, "param": [ { "dev_functions": "readonly:" } ] }
+# 遥控器按键功能：mode_shutter=按键切换模式+快门、record_capture=按键在录像与拍照间切换
+{ "rval": 0, "msg_id": 3, "param": [ { "rc_button_mode": "settable:mode_shutter#record_capture" } ] }
+# 缩时视频时长。settable 为空，多数固件不支持设置（只能读取）
+{ "rval": 0, "msg_id": 3, "param": [ { "timelapse_video_duration": "settable:" } ] }
+# 缩时视频（timelapse_video）录制时使用的分辨率，取值范围与 video_resolution 相同
+{ "rval": 0, "msg_id": 3, "param": [ { "timelapse_video_resolution": "settable:1920x1080 60P 16:9#1920x1080 30P 16:9#1920x1080 48P 16:9#1920x1080 24P 16:9#2304x1296 30P 16:9#1280x960 60P 4:3#1280x960 48P 4:3#1280x720 60P 16:9#1280x720 48P 16:9#1280x720 120P 16:9#848x480 240P 16:9" } ] }
+# 是否保存运行日志：on=保存（便于排查问题）、off=不保存
+{ "rval": 0, "msg_id": 3, "param": [ { "save_log": "settable:on#off" } ] }
