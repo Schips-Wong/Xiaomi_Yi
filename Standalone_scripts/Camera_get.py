@@ -1,7 +1,9 @@
-#! /usr/bin/env python
-# encoding: windows-1250
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
-# Res Andy 
+# 作者 Andy（中文版）
+
+# 功能：读取并打印相机的全部配置项
 
 import os, re, sys, time, socket
 from settings import camaddr
@@ -10,23 +12,23 @@ from settings import camport
 srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 srv.connect((camaddr, camport))
 
-srv.send('{"msg_id":257,"token":0}')
+# 向相机认证以获取令牌
+srv.send('{"msg_id":257,"token":0}'.encode("utf-8"))
 
-data = srv.recv(512)
+data = srv.recv(512).decode("utf-8", "ignore")
 if "rval" in data:
-	token = re.findall('"param": (.+) }',data)[0]	
+	token = re.findall('"param": (.+) }',data)[0]
 else:
-	data = srv.recv(512)
+	data = srv.recv(512).decode("utf-8", "ignore")
 	if "rval" in data:
-		token = re.findall('"param": (.+) }',data)[0]	
+		token = re.findall('"param": (.+) }',data)[0]
 
-
-
-tosend = '{"msg_id":3,"token":%s}' %token 
-srv.send(tosend)
+# 请求完整配置列表
+tosend = '{"msg_id":3,"token":%s}' %token
+srv.send(tosend.encode("utf-8"))
 
 while 1:
-	conf = srv.recv(4096)
+	conf = srv.recv(4096).decode("utf-8", "ignore")
 	if "param" in conf:
 		break
 
@@ -35,11 +37,11 @@ conf = conf[37:]
 myconf = conf.split(",")
 
 for mytag in myconf:
-	print mytag
+	print(mytag)
 
-print "_____________________________________________"
-print 
-print "press CTRL+C to close"
+print("_____________________________________________")
+print()
+print("按 CTRL+C 关闭")
 
 while 1:
 	time.sleep(1)

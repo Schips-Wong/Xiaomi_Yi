@@ -1,17 +1,17 @@
 #{"msg_id":2,"token":%s, "type":"camera_clock", "param":"2008-01-03 03:57:16"}
 
-###video_standard defines framerate settings, see video_resolution below
+###视频制式决定帧率选项，可选值见下方“视频分辨率”
 #{"msg_id":2,"token":%s, "type":"video_standard", "param":"PAL"}
 {"msg_id":2,"token":%s, "type":"video_standard", "param":"NTSC"}
 
-###NTSC-Only resolutions
+###仅 NTSC 制式可用的分辨率
 {"msg_id":2,"token":%s, "type":"video_resolution", "param":"1920x1080 60P 16:9"}
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"1920x1080 30P 16:9"}
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"1280x960 60P 4:3"}
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"1280x720 60P 16:9"}
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"1280x720 120P 16:9"}
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"848x480 240P 16:9"}
-###PAL-Only resolutions
+###仅 PAL 制式可用的分辨率
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"1280x720 48P 16:9"}
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"1280x960 48P 4:3"}
 #{"msg_id":2,"token":%s, "type":"video_resolution", "param":"1920x1080 48P 16:9"}

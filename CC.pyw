@@ -1,14 +1,15 @@
-#! /usr/bin/env python
-#Â encoding: utf-8
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
-# Res andy
+# Res andy (Python 3 + 中文界面版)
 
 AppVersion = "0.6.10 CHS"
- 
- 
 
-import base64, functools, hashlib, json, os, platform, re, select, socket, subprocess, sys, tempfile, threading, time, tkFileDialog, tkMessageBox, urllib2, webbrowser, zlib
-from Tkinter import *
+
+
+import base64, functools, hashlib, json, os, platform, re, select, socket, subprocess, sys, tempfile, threading, time, urllib.request, webbrowser, zlib
+from tkinter import *
+from tkinter import filedialog, messagebox
 from operator import itemgetter
 
 class App:
@@ -28,56 +29,56 @@ class App:
 		self.ZoomLevelOldValue = ""
 		self.thread_zoom = ""
 		self.FileSort = 7
-				
+
 		self.DonateUrl = "http://sw.deltaflyer.cz/donate.html"
 		self.GitUrl = "https://github.com/deltaflyer4747/Xiaomi_Yi"
 		self.UpdateUrl = "https://raw.githubusercontent.com/deltaflyer4747/Xiaomi_Yi/master/version.txt"
-		self.ConfigInfo = {"auto_low_light":"Automaticaly increase exposure time in low-light conditions", "auto_power_off":"Power down camera after specified time of inactivity", "burst_capture_number":"Specify ammount of images taken in Burst mode", "buzzer_ring":"Enable/disable camera locator beacon", "buzzer_volume":"Volume of camera beep", "camera_clock":"Tick&Apply to set Camera clock to the same as this PC", "capture_default_mode":"Mode to enter when changing to Capture via system_default_mode/HW button", "capture_mode":"Changes behavior of \"Photo\" button", "emergency_file_backup":"Locks file when shock is detected-for car dashcam (related to \"loop_record\")", "led_mode":"Set preferred LED behavior", "loop_record":"Overwrites oldest files when memory card is full", "meter_mode":"Metering mode for exposure/white ballance", "osd_enable":"Overlay info to hdmi/TV out", "photo_quality":"Set quality of still images", "photo_size":"Set resolution of still images", "photo_stamp":"Overlay date and time of capture to still images", "precise_cont_time":"Delay between individual images in timelapse mode", "precise_selftime":"Set delay to capture in Timer mode", "preview_status":"Turn this on to enable LIVE view", "start_wifi_while_booted":"Enable WiFi on boot", "system_default_mode":"Mode for HW trigger to set when camera is turned on", "system_mode":"Current mode for HW trigger", "timelapse_video":"Create timelapse video from image taken every 2 seconds", "video_output_dev_type":"Select video out HDMI or AV out over USB, use same cable as SJ4000", "video_quality":"Set quality of video recordings", "video_rotate":"Rotate video by 180° (upsidedown mount)", "video_resolution":"video_resolution is limited by selected video_standard", "video_stamp":"Overlay date and time to video recordings", "video_standard":"video_standard limits possible video_resolution options", "warp_enable":"On = No fisheye (Compensation ON), Off = Fisheye (Compensation OFF)", "wifi_ssid":"WiFi network name; reboot camera after Apply to take effect", "wifi_password":"WiFi network password; reboot camera after Apply to take effect"}
+		self.ConfigInfo = {"auto_low_light":"在低光环境下自动增加曝光时间", "auto_power_off":"相机在指定无操作时间后自动关机", "burst_capture_number":"设置连拍模式下拍摄的照片数量", "buzzer_ring":"启用/禁用相机定位提示音", "buzzer_volume":"相机提示音音量", "camera_clock":"点击“应用”将相机时钟同步为本机时间", "capture_default_mode":"通过 system_default_mode/硬件按钮切换到拍摄模式时进入的模式", "capture_mode":"更改“拍照”按钮的行为", "emergency_file_backup":"检测到震动时锁定文件（行车记录仪用，与“循环录像”相关）", "led_mode":"设置指示灯的行为", "loop_record":"存储卡满时覆盖最旧的文件", "meter_mode":"曝光/白平衡的测光模式", "osd_enable":"在 HDMI/电视输出上叠加信息", "photo_quality":"设置照片质量", "photo_size":"设置照片分辨率", "photo_stamp":"在照片上叠加拍摄日期和时间", "precise_cont_time":"延时摄影模式下两张照片之间的间隔", "precise_selftime":"定时模式的拍摄延迟", "preview_status":"打开此项以启用实时预览", "start_wifi_while_booted":"开机时启用 WiFi", "system_default_mode":"相机开机时硬件触发进入的模式", "system_mode":"硬件触发的当前模式", "timelapse_video":"将每2秒拍摄的照片合成延时视频", "video_output_dev_type":"选择 HDMI 视频输出或经 USB 的 AV 输出，与 SJ4000 使用相同线材", "video_quality":"设置视频录制质量", "video_rotate":"视频旋转180°（倒置安装）", "video_resolution":"video_resolution 受所选 video_standard 限制", "video_stamp":"在视频录制上叠加日期和时间", "video_standard":"video_standard 限制可选的 video_resolution", "warp_enable":"开 = 无鱼眼（开启补偿），关 = 鱼眼（关闭补偿）", "wifi_ssid":"WiFi 网络名称；应用后重启相机生效", "wifi_password":"WiFi 网络密码；应用后重启相机生效"}
 		self.ConfigTypes = {"auto_low_light":"checkbutton", "auto_power_off":"optionmenu", "burst_capture_number":"optionmenu", "buzzer_ring":"checkbutton", "buzzer_volume":"optionmenu", "camera_clock":"button", "capture_default_mode":"optionmenu", "emergency_file_backup":"checkbutton", "led_mode":"optionmenu", "loop_record":"checkbutton", "meter_mode":"optionmenu", "osd_enable":"checkbutton", "photo_quality":"optionmenu", "photo_size":"optionmenu", "photo_stamp":"optionmenu", "precise_cont_time":"optionmenu", "precise_selftime":"optionmenu", "preview_status":"checkbutton", "start_wifi_while_booted":"checkbutton", "system_default_mode":"radiobutton", "system_mode":"radiobutton", "timelapse_photo":"radiobutton", "timelapse_video":"radiobutton", "timelapse_video_duration":"entry", "video_output_dev_type":"optionmenu", "video_quality":"optionmenu", "video_resolution":"optionmenu","video_rotate":"checkbutton", "video_stamp":"optionmenu", "video_standard":"radiobutton", "warp_enable":"checkbutton", "wifi_ssid":"entry", "wifi_password":"entry"}
 		self.ConfigIgnores = ["dev_reboot", "restore_factory_settings", "capture_mode", "precise_self_running"]
-		self.FileTypes = {"/":"Folder", ".ash":"Script", ".bmp":"Image", ".ico":"Image", ".jpg":"Image", ".mka":"Audio", ".mkv":"Video", "mp3":"Audio", ".mp4":"Video", ".mpg":"Video", ".png":"Image", ".txt":"Text", "wav":"Audio"}
+		self.FileTypes = {"/":"文件夹", ".ash":"脚本", ".bmp":"图片", ".ico":"图片", ".jpg":"图片", ".mka":"音频", ".mkv":"视频", "mp3":"音频", ".mp4":"视频", ".mpg":"视频", ".png":"图片", ".txt":"文本", "wav":"音频"}
 		self.ChunkSizes = [0.5,1,2,4,8,16,32,64,128,256]
 		self.master = master
 		self.master.geometry("445x250+300+75")
-		self.master.wm_title("小蚁运动相机 [汉化:Tiya Anlite](作者Andy_S) | 程序版本 %s" %AppVersion)
+		self.master.wm_title("小米小蚁相机 控制中心 by Andy_S | 版本 %s" %AppVersion)
 		self.statusBlock = LabelFrame(self.master, bd=1, relief=SUNKEN, text="")
 		self.statusBlock.pack(side=BOTTOM, fill=X)
-		self.status = Label(self.statusBlock, width=28, text="Disconnected", anchor=W)
+		self.status = Label(self.statusBlock, width=28, text="未连接", anchor=W)
 		self.status.grid(column=0, row=0)
 		self.battery = Label(self.statusBlock, width=13, text="", anchor=E)
 		self.battery.grid(column=1, row=0)
 		self.usage = Label(self.statusBlock, width=20, text="", anchor=E)
 		self.usage.grid(column=2, row=0)
 		self.Settings()
-	
-		
-		# create a menu
+
+
+		# 创建菜单
 		self.menu = Menu(self.master)
 		root.config(menu=self.menu)
-		
+
 		self.Cameramenu = Menu(self.menu, tearoff=0)
 		self.menu.add_cascade(label="相机", menu=self.Cameramenu, underline=0)
 		self.Cameramenu.add_command(label="信息", command=self.ActionInfo, state=DISABLED, underline=0)
 		self.Cameramenu.add_command(label="格式化", command=self.ActionFormat, state=DISABLED, underline=0)
 		self.Cameramenu.add_command(label="重启", command=self.ActionReboot, state=DISABLED, underline=0)
-		self.Cameramenu.add_command(label="恢复出厂设置", command=self.ActionFactory, state=DISABLED, underline=8)
+		self.Cameramenu.add_command(label="恢复出厂设置", command=self.ActionFactory, state=DISABLED, underline=2)
 		if self.ExpertMode == "":
-			self.Cameramenu.add_command(label="高级模式", command=self.ExpertEnable, state=DISABLED)
+			self.Cameramenu.add_command(label="专家模式", command=self.ExpertEnable, state=DISABLED)
 		self.Cameramenu.add_separator()
 		self.Cameramenu.add_command(label="退出", command=self.quit, underline=1)
-		
+
 		self.helpmenu = Menu(self.menu, tearoff=0)
 		self.menu.add_cascade(label="帮助", menu=self.helpmenu, underline=0)
-		self.helpmenu.add_command(label="捐款", command=lambda aurl=self.DonateUrl:webbrowser.open_new(aurl), underline=0)
-		self.helpmenu.add_command(label="关于....", command=self.AboutProg, underline=0)
+		self.helpmenu.add_command(label="捐赠", command=lambda aurl=self.DonateUrl:webbrowser.open_new(aurl), underline=0)
+		self.helpmenu.add_command(label="关于...", command=self.AboutProg, underline=0)
 		self.UpdateCheck()
-		self.ConnWindow()		
+		self.ConnWindow()
 
 	def noaction(self, *args):
-		return				
+		return
 
 	def DebugLog(self, msg, e):
-		filek = open("debug.txt", "a")
+		filek = open("debug.txt", "a", encoding="utf-8")
 		filek.write("%s >%s<\n" %(msg,e))
 		filek.close()
 
@@ -98,54 +99,54 @@ class App:
 		self.master.unbind("<Delete>")
 		self.master.unbind("<Return>")
 		self.master.unbind("<BackSpace>")
-		
+
 
 	def Settings(self, add="", rem=""):
-		if add == "" and rem == "": #nothing to add or remove = initial call
-			try: #open the settings file (if exists) and read the settings
-				filek = open("settings.cfg","r")
+		if add == "" and rem == "": #没有要添加或删除的项 = 初始调用
+			try: #打开设置文件（如果存在）并读取设置
+				filek = open("settings.cfg","r", encoding="utf-8")
 				filet = filek.read()
 				filek.close()
 				ConfigFile = json.loads(filet)
-				
+
 				for pname in ConfigFile.keys():
 					pvalue = ConfigFile[pname]
 					if pname in ("camaddr", "camauto", "camport", "camdataport", "camwebport", "custom_vlc_path", "DebugMode", "DefaultChunkSize", "ExpertMode","FileSort"): setattr(self, pname, pvalue)
-				if not {"camaddr", "camauto", "camport", "camdataport", "camwebport", "custom_vlc_path"} <= set(ConfigFile.keys()): raise
-			except Exception: #no settings file yet or file structure mismatch - lets create default one & set defaults
-				filek = open("settings.cfg","w")
+				if not {"camaddr", "camauto", "camport", "camdataport", "camwebport", "custom_vlc_path"} <= set(ConfigFile.keys()): raise Exception("settings", "incomplete")
+			except Exception: #还没有设置文件或文件结构不匹配 - 创建默认设置并应用默认值
+				filek = open("settings.cfg","w", encoding="utf-8")
 				ConfigFile = '{"camaddr":"192.168.42.1","camauto":"","camport":7878,"camdataport":8787,"camwebport":80,"custom_vlc_path":"."}'
-				filek.write(ConfigFile) 
+				filek.write(ConfigFile)
 				filek.close()
 				self.camaddr = "192.168.42.1"
 				self.camauto = ""
 				self.camport = 7878
 				self.camdataport = 8787
 				self.camwebport = 80
-				self.custom_vlc_path = "."                                                                             
+				self.custom_vlc_path = "."
 		else:
 			if len(add)>0:
-				filek = open("settings.cfg","r")
+				filek = open("settings.cfg","r", encoding="utf-8")
 				filet = filek.read()
 				filek.close()
 				ConfigFile = json.loads(filet)
 				ConfigFile.update(add)
-				filek = open("settings.cfg","w")
-				filek.write(json.dumps(ConfigFile)) 
+				filek = open("settings.cfg","w", encoding="utf-8")
+				filek.write(json.dumps(ConfigFile))
 				filek.close()
 			elif len(rem)>0:
-				filek = open("settings.cfg","r")
+				filek = open("settings.cfg","r", encoding="utf-8")
 				filet = filek.read()
 				filek.close()
 				ConfigFile = json.loads(filet)
-				for pname in add:
+				for pname in rem:
 					del ConfigFile[pname]
-				filek = open("settings.cfg","w")
-				filek.write(json.dumps(ConfigFile)) 
+				filek = open("settings.cfg","w", encoding="utf-8")
+				filek.write(json.dumps(ConfigFile))
 				filek.close()
-	
+
 	def ConnWindow(self):
-		self.camconn = Frame(self.master) #create connection window with buttons
+		self.camconn = Frame(self.master) #创建带按钮的连接窗口
 		self.addrv1 = StringVar()
 		self.addrv2 = StringVar()
 		self.addrv3 = StringVar()
@@ -159,26 +160,26 @@ class App:
 		c.grid(row=2, column=1)
 
 
-		l = Label(self.camconn, width=12, text="IP地址：", anchor=E)
+		l = Label(self.camconn, width=12, text="IP 地址:", anchor=E)
 		l.grid(row=1, column=2)
 		e1 = Entry(self.camconn, textvariable=self.addrv1, width=20)
 		e1.grid(row=1, column=3)
-		l = Label(self.camconn, width=12, text="VLC程序地址", anchor=E)
+		l = Label(self.camconn, width=12, text="VLC 路径:", anchor=E)
 		l.grid(row=2, column=2)
 		e5 = Entry(self.camconn, textvariable=self.addrv5, width=20)
 		e5.grid(row=2, column=3)
-		l = Label(self.camconn, width=17, text="*默认地址 = .", anchor=W)
+		l = Label(self.camconn, width=17, text="*默认路径 = .", anchor=W)
 		l.grid(row=3, column=3, pady=3)
 
-		l = Label(self.camconn, width=10, text="JSON端口：", anchor=E)
+		l = Label(self.camconn, width=10, text="Json 端口:", anchor=E)
 		l.grid(row=1, column=4)
 		e2 = Entry(self.camconn, textvariable=self.addrv2, width=4)
 		e2.grid(row=1, column=5)
-		l = Label(self.camconn, width=10, text="数据端口：", anchor=E)
+		l = Label(self.camconn, width=10, text="数据端口:", anchor=E)
 		l.grid(row=2, column=4)
 		e3 = Entry(self.camconn, textvariable=self.addrv4, width=4)
 		e3.grid(row=2, column=5)
-		l = Label(self.camconn, width=10, text="WEB端口：", anchor=E)
+		l = Label(self.camconn, width=10, text="Web 端口:", anchor=E)
 		l.grid(row=3, column=4)
 		e4 = Entry(self.camconn, textvariable=self.addrv6, width=4)
 		e4.grid(row=3, column=5)
@@ -203,11 +204,11 @@ class App:
 
 	def UpdateCheck(self):
 		try:
-			newversion = urllib2.urlopen(self.UpdateUrl, timeout=2).read()
+			newversion = urllib.request.urlopen(self.UpdateUrl, timeout=2).read().decode("utf-8").strip()
 		except Exception:
 			newversion = "0"
 		if newversion > AppVersion:
-			if tkMessageBox.askyesno("发现新版本", "发现新版本 (%s)\n本程序版本为 %s\n\n打开下载页面？" %(newversion, AppVersion)):
+			if messagebox.askyesno("发现新版本", "发现新版本（%s）\n当前版本为 %s\n\n是否打开下载页面？" %(newversion, AppVersion)):
 				webbrowser.open_new(self.GitUrl)
 
 
@@ -216,7 +217,7 @@ class App:
 			if param not in self.ConfigIgnores:
 				tosend = '{"msg_id":3,"token":%s,"param":"%s"}' %(self.token, param)
 				resp = self.Comm(tosend)
-				thisresponse = resp["param"][0].values()[0]
+				thisresponse = list(resp["param"][0].values())[0]
 				if thisresponse.startswith('settable:'):
 					try:
 						thisoptions = re.findall('settable:(.+)', thisresponse)[0]
@@ -230,7 +231,7 @@ class App:
 		if param not in self.ConfigIgnores:
 			tosend = '{"msg_id":3,"token":%s,"param":"%s"}' %(self.token, param)
 			resp = self.Comm(tosend)
-			thisresponse = resp["param"][0].values()[0]
+			thisresponse = list(resp["param"][0].values())[0]
 			if thisresponse.startswith('settable:'):
 				thisoptions = re.findall('settable:(.+)', thisresponse)[0]
 				allparams = thisoptions.replace("\\/","/").split("#")
@@ -238,31 +239,31 @@ class App:
 
 
 	def ReadConfig(self):
-		tosend = '{"msg_id":3,"token":%s}' %self.token 
+		tosend = '{"msg_id":3,"token":%s}' %self.token
 		resp = self.Comm(tosend)
 		self.camconfig = {}
 		for each in resp["param"]: self.camconfig.update(each)
-			
-	
-	
+
+
+
 	def AboutProg(self):
-		tkMessageBox.showinfo("关于", "小蚁运动相机控制与配置程序\n汉化 Tiya Anlite\n\nControl&Configure | ver. %s\nCreated by Andy_S, 2015\n\nandys@deltaflyer.cz" %AppVersion)
-	
+		messagebox.showinfo("关于", "控制中心 | 版本 %s\n作者 Andy_S，2015\n\nandys@deltaflyer.cz" %AppVersion)
+
 	def CamConnect(self):
 		try:
-			self.camaddr = self.addrv1.get() #read IP address from inputbox
-			self.camport = int(self.addrv2.get()) #read port from inputbox & convert to integer
-			self.camauto = self.addrv3.get() #read autoconnect status
-			self.camdataport = int(self.addrv4.get()) #read data port from inputbox & convert to integer
-			self.custom_vlc_path = self.addrv5.get() #read custom_vlc_path
-			self.camwebport = int(self.addrv6.get()) #read web port from inputbox & convert to integer
+			self.camaddr = self.addrv1.get() #从输入框读取 IP 地址
+			self.camport = int(self.addrv2.get()) #从输入框读取端口并转为整数
+			self.camauto = self.addrv3.get() #读取自动连接状态
+			self.camdataport = int(self.addrv4.get()) #从输入框读取数据端口并转为整数
+			self.custom_vlc_path = self.addrv5.get() #读取 VLC 路径
+			self.camwebport = int(self.addrv6.get()) #从输入框读取 web 端口并转为整数
 			socket.setdefaulttimeout(5)
-			self.srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
+			self.srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #创建套接字
 			self.srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.srv.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-			self.srv.connect((self.camaddr, self.camport)) #open socket
+			self.srv.connect((self.camaddr, self.camport)) #打开套接字
 			self.thread_read = threading.Thread(target=self.JsonReader)
-			self.thread_read.setDaemon(True)
+			self.thread_read.daemon = True
 			self.thread_read.setName('JsonReader')
 			self.thread_read.start()
 			waiter = 0
@@ -273,9 +274,9 @@ class App:
 						break
 					ToWrite = {"camaddr":self.camaddr, "camauto":self.camauto, "camport":self.camport, "camdataport":self.camdataport, "camwebport":self.camwebport, "custom_vlc_path":self.custom_vlc_path}
 					self.Settings(add=ToWrite)
-					self.status.config(text="Connected") #display status message in statusbar
+					self.status.config(text="已连接") #在状态栏显示状态信息
 					self.status.update_idletasks()
-					self.camconn.destroy() #hide connection selection
+					self.camconn.destroy() #隐藏连接选择界面
 					self.UpdateUsage()
 					self.UpdateBattery()
 					self.ReadConfig()
@@ -284,11 +285,11 @@ class App:
 						if self.camconfig["sdcard_need_format"] != "no-need":
 							if not self.ActionForceFormat():
 								self.SDOK = False
-								self.SDLabelText="SD卡未被格式化！\n\n请插入可用的SD卡或者将此SD格式化！\n\n然后重启相机。"
+								self.SDLabelText="存储卡未格式化！\n\n请插入已格式化的存储卡或将其格式化，\n\n然后重新启动本程序。"
 					else:
 						self.SDOK = False
-						self.SDLabelText="没有检测到SD卡\n\n请关闭相机并插入SD卡。"
-		
+						self.SDLabelText="相机中未插入存储卡！\n\n请关闭相机电源，插入存储卡后重新启动本程序。"
+
 					self.Cameramenu.entryconfig(0, state="normal")
 					if self.ExpertMode == "":
 						self.Cameramenu.entryconfig(4, state="normal")
@@ -305,29 +306,29 @@ class App:
 						time.sleep(1)
 						waiter += 1
 					else:
-						raise Exception('连接相机', '连接失败！') #throw an exception
+						raise Exception('Connection', 'failed') #抛出异常
 
 
 		except Exception as e:
 			if self.DebugMode:
 				self.DebugLog("CamConn", e)
 			self.connected = False
-			tkMessageBox.showerror("连接", "无法连接至此地址")
+			messagebox.showerror("连接", "无法连接到指定的地址")
 			self.srv.close()
-	
+
 
 	def JsonLoop(self):
 		try:
 			ready = select.select([self.srv], [], [])
 			if ready[0]:
 				byte = self.srv.recv(1)
-				if byte == "{":
+				if byte == b"{":
 					self.Jsoncounter += 1
 					self.Jsonflip = 1
-				elif byte == "}":
+				elif byte == b"}":
 					self.Jsoncounter -= 1
 				self.Jsondata += byte
-				
+
 				if self.Jsonflip == 1 and self.Jsoncounter == 0:
 					try:
 						data_dec = json.loads(self.Jsondata)
@@ -346,22 +347,22 @@ class App:
 										self.thread_Battery.start()
 									elif data_dec["type"] == "start_photo_capture":
 										if self.camconfig["capture_mode"] == "precise quality cont.":
-											self.bphoto.config(text="Stop\nTIMELAPSE", bg="#ff6666")
-											self.brecord.config(state=DISABLED) 
+											self.bphoto.config(text="停止\n延时摄影", bg="#ff6666")
+											self.brecord.config(state=DISABLED)
 											self.brecord.update_idletasks()
 											self.bphoto.update_idletasks()
 											self.thread_ReadConfig = threading.Thread(target=self.ReadConfig)
-											self.thread_ReadConfig.setDaemon(True)
+											self.thread_ReadConfig.daemon = True
 											self.thread_ReadConfig.setName('ReadConfig')
 											self.thread_ReadConfig.start()
 									elif data_dec["type"] == "precise_cont_complete":
 										if self.camconfig["capture_mode"] == "precise quality cont.":
-											self.bphoto.config(text="Start\nTIMELAPSE", bg="#66ff66")
-											self.brecord.config(state="normal") 
+											self.bphoto.config(text="开始\n延时摄影", bg="#66ff66")
+											self.brecord.config(state="normal")
 											self.brecord.update_idletasks()
 											self.bphoto.update_idletasks()
 											self.thread_ReadConfig = threading.Thread(target=self.ReadConfig)
-											self.thread_ReadConfig.setDaemon(True)
+											self.thread_ReadConfig.daemon = True
 											self.thread_ReadConfig.setName('ReadConfig')
 											self.thread_ReadConfig.start()
 
@@ -372,7 +373,7 @@ class App:
 					except Exception as e:
 						if self.DebugMode:
 							self.DebugLog("UnkData", e)
-						print data
+						print(data_dec)
 		except Exception:
 			self.connected = False
 
@@ -383,7 +384,7 @@ class App:
 		self.Jsoncounter = 0
 		self.Jsonflip = 0
 		initcounter = 0
-		self.srv.send('{"msg_id":257,"token":0}') #auth to the camera
+		self.srv.send('{"msg_id":257,"token":0}'.encode("utf-8")) #向相机认证
 		while initcounter < 300:
 			self.JsonLoop()
 			initcounter += 1
@@ -401,22 +402,22 @@ class App:
 		self.JsonData[msgid] = ""
 		if self.DebugMode:
 			self.DebugLog("ToSend", tosend)
-		self.srv.send(tosend)
+		self.srv.send(tosend.encode("utf-8"))
 		while self.JsonData[msgid]=="":continue
-		if self.JsonData[msgid]["rval"] == -4: #wrong token, ackquire new one & resend - "workaround" for camera insisting on tokens
+		if self.JsonData[msgid]["rval"] == -4: #令牌错误，重新获取并重发 - 应对相机坚持要求令牌的“变通办法”
 			self.token = ""
-			self.srv.send('{"msg_id":257,"token":0}')
+			self.srv.send('{"msg_id":257,"token":0}'.encode("utf-8"))
 			while self.token=="":continue
 			Jtosend["token"] = self.token
 			tosend = json.dumps(Jtosend)
 			self.JsonData[msgid] = ""
-			self.srv.send(tosend)
+			self.srv.send(tosend.encode("utf-8"))
 			while self.JsonData[msgid]=="":continue
 		return self.JsonData[msgid]
 
 	def UpdateUsage(self):
 		tosend = '{"msg_id":5,"token":%s,"type":"total"}' %self.token
-		self.totalspace = self.Comm(tosend)["param"]
+		self.totalspace = float(self.Comm(tosend)["param"])
 		tosend = '{"msg_id":5,"token":%s,"type":"free"}' %self.token
 		self.freespace = float(self.Comm(tosend)["param"])
 		self.usedspace = self.totalspace-self.freespace
@@ -429,40 +430,40 @@ class App:
 			self.totalspace = self.totalspace/float(1024)
 			self.totalpre += 1
 		pres = ["kB", "MB", "GB", "TB"]
-		usage = "Used %.1f%s of %.1f%s" %(self.usedspace, pres[self.usedpre], self.totalspace, pres[self.totalpre])
-		self.usage.config(text=usage) #display usage message in statusbar
+		usage = "已用 %.1f%s / 共 %.1f%s" %(self.usedspace, pres[self.usedpre], self.totalspace, pres[self.totalpre])
+		self.usage.config(text=usage) #在状态栏显示容量信息
 		self.usage.update_idletasks()
-	
+
 	def UpdateBattery(self):
 		tosend = '{"msg_id":13,"token":%s}' %self.token
 		resp = self.Comm(tosend)
 		Ctype = resp["type"]
 		charge = resp["param"]
-                        	
+
 		if Ctype == "adapter":
 			Ctype = "充电中"
 		else:
 			Ctype = "电池"
 		battery = "%s: %s%%" %(Ctype, charge)
-		self.battery.config(text=battery) #display usage message in statusbar
+		self.battery.config(text=battery) #在状态栏显示电量信息
 		self.battery.update_idletasks()
-	
+
 	def ShowExpertMenu(self):
 		self.Expertmenu = Menu(self.menu, tearoff=0)
-		self.menu.add_cascade(label="扩展选项", menu=self.Expertmenu, underline=0)
-		self.Expertmenu.add_command(label="显示所有相机的配置值", command=self.ExpertVariables, underline=0)
-		self.Expertmenu.add_command(label="打开Telnet支持", command=self.ExpertTelnet, underline=0)
+		self.menu.add_cascade(label="专家菜单", menu=self.Expertmenu, underline=0)
+		self.Expertmenu.add_command(label="显示所有相机变量", command=self.ExpertVariables, underline=0)
+		self.Expertmenu.add_command(label="启用 Telnet 访问", command=self.ExpertTelnet, underline=0)
 		self.ExpertmenuChunkSize = Menu(self.menu, tearoff=0)
-		self.Expertmenu.add_cascade(label="File transfer chunk size", menu=self.ExpertmenuChunkSize, underline=0)
+		self.Expertmenu.add_cascade(label="文件传输块大小", menu=self.ExpertmenuChunkSize, underline=0)
 		self.ShowExpertChunkMenu()
 		if self.DebugMode:
-			self.Expertmenu.add_command(label="关闭调试模式", command=self.DebugToggle, underline=8)			
+			self.Expertmenu.add_command(label="禁用调试模式", command=self.DebugToggle, underline=0)
 		else:
-			self.Expertmenu.add_command(label="打开调试模式", command=self.DebugToggle, underline=7)			
-		self.Expertmenu.add_command(label="Activate camera jetpack", command=self.ActionInfo, state=DISABLED, underline=0)
-		self.Expertmenu.add_command(label="Explode camera", command=self.ActionInfo, state=DISABLED, underline=0)
-		self.Expertmenu.add_command(label="Kill ALL puppies", command=self.ActionInfo, state=DISABLED, underline=0)
-		
+			self.Expertmenu.add_command(label="启用调试模式", command=self.DebugToggle, underline=0)
+		self.Expertmenu.add_command(label="激活相机喷气背包", command=self.ActionInfo, state=DISABLED, underline=0)
+		self.Expertmenu.add_command(label="引爆相机", command=self.ActionInfo, state=DISABLED, underline=0)
+		self.Expertmenu.add_command(label="杀死所有小狗", command=self.ActionInfo, state=DISABLED, underline=0)
+
 	def ShowExpertChunkMenu(self):
 		self.ExpertmenuChunkSize.delete(0,END)
 		for thislabel in sorted(self.ChunkSizes):
@@ -483,8 +484,8 @@ class App:
 		for pname in sorted(self.camconfig):
 			pvalue = self.camconfig[pname]
 			toshow += "%s: %s\n" %(pname, pvalue)
-		tkMessageBox.showinfo("所有可用参数", toshow)
-			
+		messagebox.showinfo("当前所有相机变量", toshow)
+
 	def ExpertTelnet(self):
 		tosend = '{"msg_id":1283,"token":%s,"param":"."}' %self.token
 		self.curPwd = self.Comm(tosend)["pwd"].replace("/","\\/")
@@ -492,9 +493,9 @@ class App:
 		self.Comm(tosend)
 		tosend = '{"msg_id":1286,"token":%s,"param":"enable_info_display.script", "offset":0, "size":0, "md5sum":"d41d8cd98f00b204e9800998ecf8427e"}' %self.token
 		self.Comm(tosend)
-		if tkMessageBox.askyesno("重启相机", "相机需要重启使telnet功能生效\n\n现在重启？ (程序会关闭)"):
+		if messagebox.askyesno("重启相机", "必须重启相机才能启用 Telnet。\n\n现在重启吗？（本程序将关闭）"):
 			tosend = '{"msg_id":2,"token":%s, "type":"dev_reboot", "param":"on"}' %self.token
-			self.srv.send(tosend)
+			self.srv.send(tosend.encode("utf-8"))
 			self.quit()
 		else:
 			tosend = '{"msg_id":1283,"token":%s,"param":"%s"}' %(self.token, self.curPwd)
@@ -503,7 +504,7 @@ class App:
 				self.FilePrintList()
 
 
-		
+
 
 
 
@@ -511,11 +512,11 @@ class App:
 		self.mainwindow = Frame(self.master, width=550, height=400)
 		self.topbuttons = Frame(self.mainwindow, bg="#aaaaff")
 		if self.SDOK:
-			self.MainButtonControl = Button(self.topbuttons, text="控制", width=7, command=self.MenuControl, underline=6)
+			self.MainButtonControl = Button(self.topbuttons, text="控制", width=7, command=self.MenuControl, underline=0)
 			self.master.bind("l",self.MenuControl)
 			self.master.bind("L",self.MenuControl)
 			self.MainButtonControl.pack(side=LEFT, padx=10, ipadx=5, pady=5)
-		self.MainButtonConfigure = Button(self.topbuttons, text="配置", width=7, command=self.MenuConfig, underline=5)
+		self.MainButtonConfigure = Button(self.topbuttons, text="配置", width=7, command=self.MenuConfig, underline=0)
 		self.master.bind("g",self.MenuConfig)
 		self.master.bind("G",self.MenuConfig)
 		self.MainButtonConfigure.pack(side=LEFT, padx=10, ipadx=5, pady=5)
@@ -529,10 +530,10 @@ class App:
 		if self.SDOK:
 			self.MenuControl()
 		else:
-			l = Label(self.mainwindow, width=40, text="没有检测到SD卡\n\n请关闭相机并插入SD卡。", anchor=CENTER)
+			l = Label(self.mainwindow, width=40, text="相机中未插入存储卡！\n\n请关闭相机电源，插入存储卡后重新启动本程序。", anchor=CENTER)
 			l.pack(side=TOP, fill=BOTH)
 
-	
+
 	def MenuControl(self, *args):
 		self.UnbindAll()
 		self.master.geometry("475x250+300+75")
@@ -545,36 +546,36 @@ class App:
 		self.content = Frame(self.mainwindow)
 		self.controlbuttons = Frame(self.content)
 		if self.camconfig["capture_mode"] == "precise quality":
-			self.bphoto = Button(self.controlbuttons, text="拍照", width=13, command=self.ActionPhoto, bg="#ccccff")
+			self.bphoto = Button(self.controlbuttons, text="拍一张\n照片", width=13, command=self.ActionPhoto, bg="#ccccff")
 		elif self.camconfig["capture_mode"] == "precise quality cont.":
 			if self.camconfig["precise_cont_capturing"] == "off":
-				self.bphoto = Button(self.controlbuttons, text="开始延时摄像", width=13, command=self.ActionPhoto, bg="#66ff66")
+				self.bphoto = Button(self.controlbuttons, text="开始\n延时摄影", width=13, command=self.ActionPhoto, bg="#66ff66")
 			else:
-				self.bphoto = Button(self.controlbuttons, text="停止延时摄像", width=13, command=self.ActionPhoto, bg="#ff6666")
+				self.bphoto = Button(self.controlbuttons, text="停止\n延时摄影", width=13, command=self.ActionPhoto, bg="#ff6666")
 		elif self.camconfig["capture_mode"] == "burst quality":
-			self.bphoto = Button(self.controlbuttons, text="Burst \nPHOTOS", width=13, command=self.ActionPhoto, bg="#ffccff")
+			self.bphoto = Button(self.controlbuttons, text="连拍\n照片", width=13, command=self.ActionPhoto, bg="#ffccff")
 		elif self.camconfig["capture_mode"] == "precise self quality":
-			self.bphoto = Button(self.controlbuttons, text="Delayed\nPHOTO", width=13, command=self.ActionPhoto, bg="#ccffff")
+			self.bphoto = Button(self.controlbuttons, text="定时\n拍照", width=13, command=self.ActionPhoto, bg="#ccffff")
 		self.bphoto.pack(side=LEFT, padx=12, pady=5)
-		
-	
+
+
 		if "record" in self.camconfig["app_status"]:
-			self.brecord = Button(self.controlbuttons, text="停止摄像", width=7, command=self.ActionRecordStop, bg="#ff6666")
+			self.brecord = Button(self.controlbuttons, text="停止\n录像", width=7, command=self.ActionRecordStop, bg="#ff6666")
 			self.bphoto.config(state=DISABLED)
-			self.bphoto.update_idletasks() 
+			self.bphoto.update_idletasks()
 		else:
-			self.brecord = Button(self.controlbuttons, text="开始摄像", width=7, command=self.ActionRecordStart, bg="#66ff66")
+			self.brecord = Button(self.controlbuttons, text="开始\n录像", width=7, command=self.ActionRecordStart, bg="#66ff66")
 		self.brecord.pack(side=LEFT, padx=10, ipadx=5, pady=5)
 		if self.camconfig["capture_mode"] == "precise quality cont.":
 			if self.camconfig["precise_cont_capturing"] == "on":
-				self.brecord.config(state=DISABLED) 
+				self.brecord.config(state=DISABLED)
 				self.brecord.update_idletasks()
 
 
 		if "off" in self.camconfig["preview_status"] or "record" in self.camconfig["app_status"]:
-			self.bstream = Button(self.controlbuttons, text="实时预览", width=7, command=self.ActionVideoStart, bg="#ffff66", state=DISABLED)
+			self.bstream = Button(self.controlbuttons, text="实时\n预览", width=7, command=self.ActionVideoStart, bg="#ffff66", state=DISABLED)
 		else:
-			self.bstream = Button(self.controlbuttons, text="实时预览", width=7, command=self.ActionVideoStart, bg="#ffff66")
+			self.bstream = Button(self.controlbuttons, text="实时\n预览", width=7, command=self.ActionVideoStart, bg="#ffff66")
 		self.bstream.pack(side=LEFT, padx=10, ipadx=5, pady=5)
 
 		if self.ZoomLevelValue == "":
@@ -589,40 +590,40 @@ class App:
 			self.thread_zoom.start()
 
 
-		
+
 		self.ZoomLevelFrame = Frame(self.controlbuttons, width=50)
 		self.ZoomLevel = Scale(self.ZoomLevelFrame, from_=0, to=100, orient=HORIZONTAL, width=10, length=150, command=self.ActionZoomChange)
 		self.ZoomLevel.set(ThisZoomLevelValue)
 		self.ZoomLevel.pack(side=TOP)
-		Label(self.ZoomLevelFrame, width=10, text="Zoom level", anchor=W).pack(side=TOP)
+		Label(self.ZoomLevelFrame, width=10, text="变焦级别", anchor=W).pack(side=TOP)
 		self.ZoomLevelFrame.pack(side=TOP, fill=X, padx=5)
 
 		self.controlbuttons.pack(side=TOP, fill=X)
 
 
 		self.FramePhotoButtonMod = Frame(self.content)
-		self.Photo_options = {"precise quality":"Single","precise quality cont.":"Timelapse","burst quality":"Burst","precise self quality":"Delayed"}
+		self.Photo_options = {"precise quality":"单拍","precise quality cont.":"延时","burst quality":"连拍","precise self quality":"定时"}
 		self.Photo_thisvalue = StringVar(self.FramePhotoButtonMod)
-		self.Photo_thisvalue.set(self.Photo_options[self.camconfig["capture_mode"]]) # actual value
+		self.Photo_thisvalue.set(self.Photo_options[self.camconfig["capture_mode"]]) #实际值
 		self.Photo_thisvalue.trace("w", self.MenuPhoto_changed)
-		self.Photo_valuebox = OptionMenu(self.FramePhotoButtonMod, self.Photo_thisvalue, *self.Photo_options.values())
+		self.Photo_valuebox = OptionMenu(self.FramePhotoButtonMod, self.Photo_thisvalue, *list(self.Photo_options.values()))
 		self.Photo_valuebox.config(width=10)
 		self.Photo_valuebox.pack(side=LEFT, padx=10)
 		self.FramePhotoButtonMod.pack(side=TOP, fill=X)
 
 
 		self.content.pack(side=TOP, fill=X)
-	
+
 	def MenuPhoto_changed(self, *args):
-		myoption = self.Photo_options.keys()[self.Photo_options.values().index(self.Photo_thisvalue.get())]
+		myoption = list(self.Photo_options.keys())[list(self.Photo_options.values()).index(self.Photo_thisvalue.get())]
 		tosend = '{"msg_id":2,"token":%s, "type":"capture_mode", "param":"%s"}' %(self.token, myoption)
 		self.Comm(tosend)
 		self.MenuControl()
 
-		
-	
+
+
 	def ExpertEnable(self):
-		if tkMessageBox.askyesno("打开扩展模式", "你确认要打开\n扩展模式\n\n这可能会有潜在的危险性\n但能提供强大和有用的功能！\n\n你将为此同意承担\n后面的操作可能带来的后果\nin expert mode.\n\n由于不正确使用软件\n造成相机潜在性的损坏的\n软件作者ANY不为此承担任何责任！"):
+		if messagebox.askyesno("启用专家模式", "确定要启用专家模式吗？\n\n这将启用具有潜在危险、\n但功能更强且实用的选项！\n\n接受此提示即表示你同意\n在专家模式下的所有操作\n由你自己承担全部责任。\n\n本程序作者对因不当使用本软件\n可能造成的相机损坏\n不承担任何责任。"):
 			self.ExpertMode = self.camconfig["serial_number"]
 			tosend = {"ExpertMode":self.ExpertMode}
 			self.Settings(add=tosend)
@@ -641,12 +642,12 @@ class App:
 		self.ZoomLevelValue = self.ZoomLevel.get()
 
 	def ActionInfo(self):
-		tkMessageBox.showinfo("Camera information", "SW ver: %s\nHW ver: %s\nSN: %s" %(self.camconfig["sw_version"], self.camconfig["hw_version"], self.camconfig["serial_number"]))
+		messagebox.showinfo("相机信息", "软件版本: %s\n硬件版本: %s\n序列号: %s" %(self.camconfig["sw_version"], self.camconfig["hw_version"], self.camconfig["serial_number"]))
 		self.UpdateUsage()
 
 
 	def ActionForceFormat(self):
-		if tkMessageBox.askyesno("格式化存储卡", "存储卡尚未被格式化\n现在格式化存储卡吗？\n\n此操作无法撤销\n你将会丢失存储卡内所有数据！"):
+		if messagebox.askyesno("格式化存储卡", "存储卡未格式化\n是否立即格式化存储卡？\n\n此操作无法撤销\n所有照片和视频将丢失！"):
 			tosend = '{"msg_id":4,"token":%s}' %self.token
 			self.Comm(tosend)
 			return(True)
@@ -654,7 +655,7 @@ class App:
 			return(False)
 
 	def ActionFormat(self):
-		if tkMessageBox.askyesno("格式化存储卡", "是否确认要\n格式化存储卡？\n\n此操作无法撤销\n你将会丢失存储卡内所有数据！"):
+		if messagebox.askyesno("格式化存储卡", "确定要格式化存储卡吗？\n\n此操作无法撤销\n所有照片和视频将丢失！"):
 			tosend = '{"msg_id":4,"token":%s}' %self.token
 			self.Comm(tosend)
 		self.UpdateUsage()
@@ -662,15 +663,15 @@ class App:
 			self.FilePrintList()
 
 	def ActionReboot(self):
-		if tkMessageBox.askyesno("重启相机", "是否确认要\n重启相机？\n\n此操作会关闭本软件"):
+		if messagebox.askyesno("重启相机", "确定要重启相机吗？\n\n这将关闭本程序"):
 			tosend = '{"msg_id":2,"token":%s, "type":"dev_reboot", "param":"on"}' %self.token
-			self.srv.send(tosend)
+			self.srv.send(tosend.encode("utf-8"))
 			self.quit()
 
 	def ActionFactory(self):
-		if tkMessageBox.askyesno("恢复出厂设置", "是否确认要\n恢复相机出厂设置？\n\n此操作会关闭本软件"):
+		if messagebox.askyesno("恢复出厂设置", "确定要将相机恢复出厂设置吗？\n\n这将关闭本程序"):
 			tosend = '{"msg_id":2,"token":%s, "type":"restore_factory_settings", "param":"on"}' %self.token
-			self.srv.send(tosend)
+			self.srv.send(tosend.encode("utf-8"))
 			self.quit()
 
 	def ActionPhoto(self):
@@ -691,22 +692,22 @@ class App:
 		self.UpdateUsage()
 		tosend = '{"msg_id":513,"token":%s}' %self.token
 		self.Comm(tosend)
-		self.brecord.config(text="STOP\nrecording", command=self.ActionRecordStop, bg="#ff6666")
+		self.brecord.config(text="停止\n录像", command=self.ActionRecordStop, bg="#ff6666")
 		self.brecord.update_idletasks()
 		self.bphoto.config(state=DISABLED)
-		self.bphoto.update_idletasks() 
+		self.bphoto.update_idletasks()
 		self.ReadConfig()
 
 	def ActionRecordStop(self):
 		tosend = '{"msg_id":514,"token":%s}' %self.token
 		self.Comm(tosend)
-		self.brecord.config(text="START\nrecording", command=self.ActionRecordStart, bg="#66ff66")
+		self.brecord.config(text="开始\n录像", command=self.ActionRecordStart, bg="#66ff66")
 		self.brecord.update_idletasks()
 		self.bphoto.config(state="normal")
-		self.bphoto.update_idletasks() 
+		self.bphoto.update_idletasks()
 		self.ReadConfig()
 		self.UpdateUsage()
-	
+
 	def ActionVideoStart(self):
 		tosend = '{"msg_id":259,"token":%s,"param":"none_force"}' %self.token
 		self.Comm(tosend)
@@ -716,43 +717,43 @@ class App:
 					torun = '"%s" rtsp://%s:554/live' %(self.custom_vlc_path, self.camaddr)
 					subprocess.Popen(torun, shell=True)
 				else:
-					tkMessageBox.showinfo("预览", "未找到VLC播放器\n请使用支持流媒体的播放器访问：\n rtsp://%s:554/live" %(self.camaddr))
+					messagebox.showinfo("实时预览", "未找到 VLC 播放器\n请使用你喜欢的播放器打开：\n rtsp://%s:554/live" %(self.camaddr))
 			else:
 				mysys = platform.system()
 				if mysys == "Windows":
 					if os.path.isfile("c:/Program Files/VideoLan/VLC/vlc.exe"):
-						torun = '"c:/Program Files/VideoLan/VLC/vlc.exe" rtsp://%s:554/live' %(self.camaddr) 
+						torun = '"c:/Program Files/VideoLan/VLC/vlc.exe" rtsp://%s:554/live' %(self.camaddr)
 						subprocess.Popen(torun, shell=True)
 					else:
 						if os.path.isfile("c:/Program Files (x86)/VideoLan/VLC/vlc.exe"):
 							torun = '"c:/Program Files (x86)/VideoLan/VLC/vlc.exe" rtsp://%s:554/live' %(self.camaddr)
 							subprocess.Popen(torun, shell=True)
 						else:
-							tkMessageBox.showinfo("预览", "未找到VLC播放器\n请使用支持流媒体的播放器访问：\n rtsp://%s:554/live" %(self.camaddr))
+							messagebox.showinfo("实时预览", "未找到 VLC 播放器\n请使用你喜欢的播放器打开：\n rtsp://%s:554/live" %(self.camaddr))
 				elif mysys == "Darwin":
 					if os.path.isfile("/Applications/VLC.app/Contents/MacOS/VLC"):
 						torun = '"/Applications/VLC.app/Contents/MacOS/VLC" rtsp://%s:554/live' %(self.camaddr)
 						subprocess.Popen(torun, shell=True)
 					else:
-						tkMessageBox.showinfo("预览", "未找到VLC播放器\n请使用支持流媒体的播放器访问：\n rtsp://%s:554/live" %(self.camaddr))
+						messagebox.showinfo("实时预览", "未找到 VLC 播放器\n请使用你喜欢的播放器打开：\n rtsp://%s:554/live" %(self.camaddr))
 				else:
-					tkMessageBox.showinfo("预览", "未找到VLC播放器\n请使用支持流媒体的播放器访问：\n rtsp://%s:554/live" %(self.camaddr))
+					messagebox.showinfo("实时预览", "未找到 VLC 播放器\n请使用你喜欢的播放器打开：\n rtsp://%s:554/live" %(self.camaddr))
 		except Exception as e:
 			if self.DebugMode:
 				self.DebugLog("VlcNotFound", e)
-			tkMessageBox.showinfo("预览", "未找到VLC播放器\n请使用支持流媒体的播放器访问：\n rtsp://%s:554/live" %(self.camaddr))
-	
+			messagebox.showinfo("实时预览", "未找到 VLC 播放器\n请使用你喜欢的播放器打开：\n rtsp://%s:554/live" %(self.camaddr))
+
 
 	def MenuConfig_Apply(self, *args):
 		for ThisOption in self.config_ToChange.keys():
 			ThisValue = self.config_ToChange[ThisOption]
 			self.MenuConfig_Commit(ThisOption, ThisValue)
 		self.config_ToChange = {}
-			
+
 	def MenuConfig_Commit(self, ThisOption, ThisValue):
 		if ThisOption == "camera_clock":
 			ThisValue = time.strftime("%Y-%m-%d %H:%M:%S")
-		tosend = '{"msg_id":2,"token":%s, "type":"%s", "param":"%s"}' %(self.token, ThisOption, ThisValue.replace("/","\\/"))
+		tosend = '{"msg_id":2,"token":%s, "type":"%s", "param":"%s"}' %(self.token, ThisOption, str(ThisValue).replace("/","\\/"))
 		self.ReadConfig()
 		self.Comm(tosend)
 
@@ -765,7 +766,7 @@ class App:
 			ThisValue = self.Config_WiPW.get()
 		else:
 			ThisValue = self.master.getvar(args[0])
-		self.config_ToChange[ThisOption] = ThisValue 
+		self.config_ToChange[ThisOption] = ThisValue
 
 		if ThisOption == "video_standard":
 			menu = self.config_VidRes['menu']
@@ -780,14 +781,14 @@ class App:
 
 	def MenuConfig_WindowSize(self, event):
 		self.controlcanvas.configure(scrollregion=self.controlcanvas.bbox("all"),width=740,height=485)
-	
+
 	def MenuConfig_WheelScroll(self, event):
-		if event.num == 5: # linux scroll down
+		if event.num == 5: # Linux 向下滚动
 			self.controlcanvas.yview_scroll(1, "units")
-		elif event.num == 4: # linux scroll up
+		elif event.num == 4: # Linux 向上滚动
 			self.controlcanvas.yview_scroll(-1, "units")
-		else: # windows scroll event
-			self.controlcanvas.yview_scroll(-1*(event.delta/120), "units")
+		else: # Windows 滚轮事件
+			self.controlcanvas.yview_scroll(-1*(event.delta//120), "units")
 
 	def MenuConfig(self, *args):
 		self.UnbindAll()
@@ -799,8 +800,8 @@ class App:
 			self.curPwdFrame.destroy()
 		except Exception:
 			pass
-		
-		#First step of video_standard workaround
+
+		# video_standard 变通办法第一步
 		This_video_standard = self.camconfig["video_standard"]
 		This_video_resolution = self.camconfig["video_resolution"]
 		if This_video_standard == "NTSC":
@@ -810,7 +811,7 @@ class App:
 			self.MenuConfig_VideoresPal = self.camsettableconfig["video_resolution"]
 			self.MenuConfig_Commit("video_standard", "NTSC")
 			self.GetDetailConfig("video_resolution")
-		else:		
+		else:
 			self.MenuConfig_VideoresPal = self.camsettableconfig["video_resolution"]
 			self.MenuConfig_Commit("video_standard", "NTSC")
 			self.GetDetailConfig("video_resolution")
@@ -818,8 +819,8 @@ class App:
 			self.MenuConfig_Commit("video_standard", "PAL")
 			self.GetDetailConfig("video_resolution")
 		self.MenuConfig_Commit("video_resolution", This_video_resolution)
-		
-		
+
+
 		self.status = []
 		self.config_ToChange = {}
 		self.config_options = sorted(self.camsettableconfig.keys())
@@ -832,14 +833,14 @@ class App:
 		self.controlcanvas.bind_all("<Button-5>", self.MenuConfig_WheelScroll)
 		self.controloptions = Frame(self.controlcanvas)
 		self.config_scrollbar=Scrollbar(self.controlselect,orient="vertical",command=self.controlcanvas.yview)
-		self.controlcanvas.configure(yscrollcommand=self.config_scrollbar.set)	
+		self.controlcanvas.configure(yscrollcommand=self.config_scrollbar.set)
 		self.config_scrollbar.pack(side="right",fill="y")
 		self.controlcanvas.pack(side="left")
 		self.controlcanvas.create_window((0,0),window=self.controloptions,anchor='nw')
 		self.controloptions.bind("<Configure>",self.MenuConfig_WindowSize)
 
 		self.controlbuttons = Frame(self.controloptions, width=445, height=20)
-		self.config_apply = Button(self.controlbuttons, text="Apply", width=7, command=self.MenuConfig_Apply)
+		self.config_apply = Button(self.controlbuttons, text="应用", width=7, command=self.MenuConfig_Apply)
 		self.config_apply.pack(side=LEFT, padx=10, pady=5)
 		self.controlbuttons.pack(side=TOP, fill=X)
 
@@ -905,22 +906,22 @@ class App:
 						ValueBox = Entry(ThisFrame, textvariable=ThisValue, width=25)
 						ValueBox.grid(row=row,column=1)
 						self.status.append((ValueBox,ThisValue))
-			
+
 			if ThisOption in self.ConfigInfo:
 				ThisHint = Label(ThisFrame, width=62, text="*%s" %self.ConfigInfo[ThisOption], anchor=W).grid(row=row, column=2, padx=10)
 			else:
-				ThisHint = Label(ThisFrame, width=62, text='* Unknown config option, if you know what it does, let me know.' , anchor=W).grid(row=row, column=2, padx=10)
+				ThisHint = Label(ThisFrame, width=62, text='* 未知配置项，如果你知道它的作用，请告诉我。' , anchor=W).grid(row=row, column=2, padx=10)
 			ThisFrame.pack(side=TOP)
 			row += 1
 
 		self.controlbuttons = Frame(self.controloptions, width=445, height=20)
-		self.config_apply = Button(self.controlbuttons, text="Apply", width=7, command=self.MenuConfig_Apply)
+		self.config_apply = Button(self.controlbuttons, text="应用", width=7, command=self.MenuConfig_Apply)
 		self.config_apply.pack(side=LEFT, padx=10, pady=5)
 		self.controlbuttons.pack(side=TOP, fill=X)
 
 
 		self.content.pack(side=TOP, fill=X)
-	
+
 	def FileYScrollKey(self, *args):
 		self.ListboxFileType.yview_moveto(args[0])
 		self.ListboxFileSize.yview_moveto(args[0])
@@ -928,10 +929,10 @@ class App:
 		self.FilesScrollbar.set(*args)
 
 	def FileYScroll(self, *args):
-		apply(self.ListboxFileType.yview, args)
-		apply(self.ListboxFileName.yview, args)
-		apply(self.ListboxFileSize.yview, args)
-		apply(self.ListboxFileDate.yview, args)
+		self.ListboxFileType.yview(*args)
+		self.ListboxFileName.yview(*args)
+		self.ListboxFileSize.yview(*args)
+		self.ListboxFileDate.yview(*args)
 
 	def FileDownReport(self, bytes_so_far, chunk_size, total_size, FileTP):
 		percent = float(bytes_so_far) / total_size
@@ -943,10 +944,10 @@ class App:
 			self.FileTime = thistime
 			pre = 0
 			AvgSpeed = sum(self.FileSpeed) / float(len(self.FileSpeed))
-			
+
 			remaining = int((total_size-bytes_so_far) / AvgSpeed)
 
-			self.FileProgress.config(text="Downloading %s at %s/s (%0.2f%%, %ss left)" %(FileTP, self.GetPres(Value=AvgSpeed), percent, remaining), bg=self.defaultbg)
+			self.FileProgress.config(text="正在下载 %s，速度 %s/s（%0.2f%%，剩余 %s 秒）" %(FileTP, self.GetPres(Value=AvgSpeed), percent, remaining), bg=self.defaultbg)
 
 
 
@@ -963,20 +964,19 @@ class App:
 				thisPwd = re.findall("/tmp/fuse_d/(.+)", thisPwd)[0]
 			thisUrl = 'http://%s:%s/%s/%s' %(self.camaddr, self.camwebport, thisPwd, FileTP)
 			if self.DebugMode:
-				self.DebugLog("FileDUrl", thisUrl)			
-			response = urllib2.urlopen(thisUrl)
+				self.DebugLog("FileDUrl", thisUrl)
+			response = urllib.request.urlopen(thisUrl)
 
-			total_size = response.info().getheader('Content-Length').strip()
-			total_size = int(total_size)
+			total_size = int(response.headers.get('Content-Length', '0').strip())
 			bytes_so_far = 0
-			
+
 			ThisFileName = "Files/%s" %FileTP
 			filek = open(ThisFileName, "wb")
 			self.FileTime = time.time()
 			while 1:
 				chunk = response.read(chunk_size)
 				bytes_so_far += len(chunk)
-				
+
 				if not chunk:
 					break
 				filek.write(chunk)
@@ -984,20 +984,20 @@ class App:
 					report_hook(bytes_so_far, chunk_size, total_size, FileTP)
 			filek.close()
 			if bytes_so_far == total_size:
-				self.FileProgress.config(text="%s downloaded" %(FileTP), bg="#ddffdd")
-			
+				self.FileProgress.config(text="%s 下载完成" %(FileTP), bg="#ddffdd")
+
 
 
 		else:
-			self.Datasrv = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create data socket
+			self.Datasrv = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #创建数据套接字
 			self.Datasrv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.Datasrv.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-			self.Datasrv.connect((self.camaddr, self.camdataport)) #open data socket
+			self.Datasrv.connect((self.camaddr, self.camdataport)) #打开数据套接字
 			tosend = '{"msg_id":1285,"token":%s,"param":"%s", "offset":0, "fetch_size":%s}' %(self.token, FileTP, self.FileSize[FileTP])
 			resp = self.Comm(tosend)
 			total_size = int(resp["size"])
 			bytes_so_far = 0
-			
+
 			ThisFileName = "Files/%s" %FileTP
 			filek = open(ThisFileName, "wb")
 			while self.connected:
@@ -1011,29 +1011,29 @@ class App:
 					view = view[nbytes:]
 					this_size -= nbytes
 					bytes_so_far += nbytes
-	
+
 				if report_hook:
 					report_hook(bytes_so_far, chunk_size, total_size, FileTP)
 				if bytes_so_far >= total_size:
 					break
-	
+
 			tmp = 0
 			while 1:
 				if 7 in self.JsonData.keys():
 					if "type" in self.JsonData[7].keys():
 						if self.JsonData[7]["type"] == "get_file_complete":
 							self.JsonData[7]["type"] = ""
-							self.FileProgress.config(text="%s downloaded" %(FileTP), bg="#ddffdd")
+							self.FileProgress.config(text="%s 下载完成" %(FileTP), bg="#ddffdd")
 							filek.write(chunk)
 							break
 				time.sleep(1)
 				tmp += 1
 				if tmp >= 5:
-					raise Exception('File download', 'failed') #throw an exception
+					raise Exception('File download', 'failed') #抛出异常
 					break
 			filek.close()
 			self.Datasrv.close()
-	
+
 
 	def FileDownloadThread(self):
 		FileIds = ()
@@ -1042,7 +1042,7 @@ class App:
 				FileIds = self.ListboxFileName.curselection()
 			except Exception:
 				pass
-# fix for web port by luckylz https://forum.dashcamtalk.com/threads/yicam-can-not-visit-by-http-webport-any-more.13356
+# Web 端口修复 by luckylz https://forum.dashcamtalk.com/threads/yicam-can-not-visit-by-http-webport-any-more.13356
 		tosend = '{"msg_id":259,"param":"none_force","token":%s}' %(self.token)
 		resp = self.Comm(tosend)
 		try:
@@ -1051,16 +1051,16 @@ class App:
 				os.mkdir("Files",0o777)
 			for FileTP in FilesToProcess:
 				if not FileTP.endswith("/"):
-					self.FileProgress.config(text="Downloading", bg=self.defaultbg)
+					self.FileProgress.config(text="正在下载", bg=self.defaultbg)
 					try:
 						self.FileDownChunk(report_hook=self.FileDownReport, FileTP=FileTP)
 					except Exception as e:
 						if self.DebugMode:
 							self.DebugLog("FileDChnk", e)
-						self.FileProgress.config(text="File download failed!", bg="#ffdddd")
+						self.FileProgress.config(text="文件下载失败！", bg="#ffdddd")
 						pass
 				else:
-					self.FileProgress.config(text="You cannot download a folder!", bg="#ffdddd")
+					self.FileProgress.config(text="无法下载文件夹！", bg="#ffdddd")
 			self.MainButtonControl.config(state="normal")
 			self.MainButtonConfigure.config(state="normal")
 			self.MainButtonFiles.config(state="normal")
@@ -1076,11 +1076,11 @@ class App:
 			self.ListboxFileName.bind("<Double-Button-1>", self.FileDoubleClick)
 			self.ListboxFileName.bind("<Return>", self.FileDoubleClick)
 			self.ListboxFileName.bind("<BackSpace>", self.KeyCwd)
-							
+
 		except Exception as e:
 			if self.DebugMode:
 				self.DebugLog("FileDThrd", e)
-			self.FileProgress.config(text="File download failed!", bg="#ffdddd")
+			self.FileProgress.config(text="文件下载失败！", bg="#ffdddd")
 			self.MainButtonControl.config(state="normal")
 			self.MainButtonConfigure.config(state="normal")
 			self.MainButtonFiles.config(state="normal")
@@ -1114,10 +1114,10 @@ class App:
 		self.ListboxFileName.bind("<Double-Button-1>", self.noaction)
 		self.ListboxFileName.bind("<Return>", self.noaction)
 		self.ListboxFileName.bind("<BackSpace>", self.noaction)
-		
+
 		self.thread_FileDown = threading.Thread(target=self.FileDownloadThread)
 		self.thread_FileDown.start()
-					
+
 
 	def FileUpReport(self, bytes_so_far, chunk_size, total_size, FileTP):
 		percent = float(bytes_so_far) / total_size
@@ -1129,13 +1129,13 @@ class App:
 			self.FileTime = thistime
 			pre = 0
 			AvgSpeed = sum(self.FileSpeed) / float(len(self.FileSpeed))
-			
+
 			remaining = int((total_size-bytes_so_far) / AvgSpeed)
 
-			self.FileProgress.config(text="Uploading %s at %s/s (%0.2f%%, %ss left)" %(FileTP, self.GetPres(Value=AvgSpeed), percent, remaining), bg=self.defaultbg)
+			self.FileProgress.config(text="正在上传 %s，速度 %s/s（%0.2f%%，剩余 %s 秒）" %(FileTP, self.GetPres(Value=AvgSpeed), percent, remaining), bg=self.defaultbg)
 
 		if bytes_so_far >= total_size:
-			self.FileProgress.config(text="%s uploaded" %(FileTP), bg="#ddffdd")
+			self.FileProgress.config(text="%s 上传完成" %(FileTP), bg="#ddffdd")
 
 	def FileUpChunk(self, chunk_size=0, report_hook=None):
 		if chunk_size == 0:
@@ -1146,10 +1146,9 @@ class App:
 		self.FileSpeed = []
 		ThisPosition = 0
 		bytes_so_far = 0
-		
-		ThisFileName = self.FileToUpload.name.split("/")[-1:][0]
-		ThisFileName = ThisFileName.encode('utf-8')
-		ThisFileName = ThisFileName.replace('–','-')# hackish fix for windows file name after copying file
+
+		ThisFileName = os.path.basename(self.FileToUpload.name)
+		ThisFileName = ThisFileName.replace('–','-') # Windows 下复制文件后文件名的临时修补
 		ThisMD5 = hashlib.md5(ThisFileContent).hexdigest()
 		tosend = '{"msg_id":1286,"token":%s,"md5sum":"%s", "param":"%s", "offset":%s, "size":%s}' %(self.token, ThisMD5, ThisFileName, ThisPosition, total_size)
 		resp = self.Comm(tosend)
@@ -1158,7 +1157,7 @@ class App:
 				ThisSize = chunk_size
 				if ThisSize+ThisPosition > total_size:
 					ThisSize = total_size - ThisPosition
-				DataSend = buffer(ThisFileContent, ThisPosition, ThisSize)
+				DataSend = memoryview(ThisFileContent)[ThisPosition:ThisPosition+ThisSize]
 				self.Datasrv.sendall(DataSend)
 				ThisPosition += ThisSize
 				if report_hook:
@@ -1173,24 +1172,24 @@ class App:
 							self.JsonData[7]["type"] = ""
 							break
 		else:
-			self.FileProgress.config(text="File upload rejected!", bg="#ffdddd")
+			self.FileProgress.config(text="文件上传被拒绝！", bg="#ffdddd")
 		self.FileToUpload.close()
 
 	def FileUploadThread(self):
 		try:
-			self.Datasrv = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create data socket
+			self.Datasrv = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #创建数据套接字
 			self.Datasrv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			self.Datasrv.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-			self.Datasrv.connect((self.camaddr, self.camdataport)) #open data socket
+			self.Datasrv.connect((self.camaddr, self.camdataport)) #打开数据套接字
 
-			self.FileProgress.config(text="Uploading", bg=self.defaultbg)
+			self.FileProgress.config(text="正在上传", bg=self.defaultbg)
 			time.sleep(1)
 			try:
 				self.FileUpChunk(report_hook=self.FileUpReport)
 			except Exception as e:
 				if self.DebugMode:
 					self.DebugLog("FileUChnk", e)
-				self.FileProgress.config(text="File upload failed!", bg="#ffdddd")
+				self.FileProgress.config(text="文件上传失败！", bg="#ffdddd")
 				pass
 			self.Datasrv.close()
 			self.MainButtonControl.config(state="normal")
@@ -1209,11 +1208,11 @@ class App:
 			self.ListboxFileName.bind("<Return>", self.FileDoubleClick)
 			self.ListboxFileName.bind("<BackSpace>", self.KeyCwd)
 			self.FilePrintList()
-							
+
 		except Exception as e:
 			if self.DebugMode:
 				self.DebugLog("FileDThrd", e)
-			self.FileProgress.config(text="File upload failed!", bg="#ffdddd")
+			self.FileProgress.config(text="文件上传失败！", bg="#ffdddd")
 			self.MainButtonControl.config(state="normal")
 			self.MainButtonConfigure.config(state="normal")
 			self.MainButtonFiles.config(state="normal")
@@ -1234,7 +1233,7 @@ class App:
 
 	def FileUpload(self, *args):
 		self.FileToUpload = None
-		self.FileToUpload = tkFileDialog.askopenfile(mode='rb', title="Select a file to upload")
+		self.FileToUpload = filedialog.askopenfile(mode='rb', title="选择要上传的文件")
 		if self.FileToUpload:
 			self.MainButtonControl.config(state=DISABLED)
 			self.MainButtonConfigure.config(state=DISABLED)
@@ -1251,11 +1250,11 @@ class App:
 			self.ListboxFileName.bind("<Double-Button-1>", self.noaction)
 			self.ListboxFileName.bind("<Return>", self.noaction)
 			self.ListboxFileName.bind("<BackSpace>", self.noaction)
-		
+
 			self.thread_FileUp = threading.Thread(target=self.FileUploadThread)
 			self.thread_FileUp.start()
 
-			
+
 	def FileCwd(self):
 		if len(self.ListboxFileName.curselection()) == 1:
 			cwd = self.ListboxFileName.get(self.ListboxFileName.curselection()[0])
@@ -1263,13 +1262,13 @@ class App:
 				tosend = '{"msg_id":1283,"token":%s,"param":"%s"}' %(self.token, cwd)
 				self.curPwd = self.Comm(tosend)["pwd"]
 				self.FilePrintList()
-			
+
 	def KeyCwd(self, *args):
 		if self.curPwd != "/":
 			tosend = '{"msg_id":1283,"token":%s,"param":"%s"}' %(self.token, "../")
 			self.curPwd = self.Comm(tosend)["pwd"]
 			self.FilePrintList()
-			
+
 	def FileDoubleClick(self, *args):
 		if len(self.ListboxFileName.curselection()) == 1:
 			clicked = self.ListboxFileName.get(self.ListboxFileName.curselection()[0])
@@ -1284,23 +1283,23 @@ class App:
 			FilesToProcess = [self.ListboxFileName.get(idx) for idx in self.ListboxFileName.curselection()]
 			FilesToProcessStr = "\n".join(FilesToProcess)
 
-			if tkMessageBox.askyesno("Delete file", "Are you sure you want to DELETE\n\n%s\n\nThis action can't be undone!" %FilesToProcessStr):
+			if messagebox.askyesno("删除文件", "确定要删除\n\n%s\n\n此操作无法撤销！" %FilesToProcessStr):
 				if self.ExpertMode == "":
-					tosend = '{"msg_id":1283,"token":%s,"param":"\/var\/www\/DCIM\/%s"}' %(self.token, self.MediaDir) #make sure we are still in the correct path
+					tosend = '{"msg_id":1283,"token":%s,"param":"\/var\/www\/DCIM\/%s"}' %(self.token, self.MediaDir) #确保仍在正确的路径
 					self.Comm(tosend)
 				for FileTP in FilesToProcess:
-					self.FileProgress.config(text="Deleting %s" %FileTP, bg=self.defaultbg)
+					self.FileProgress.config(text="正在删除 %s" %FileTP, bg=self.defaultbg)
 					tosend = '{"msg_id":1281,"token":%s,"param":"%s"}' %(self.token, FileTP)
 					self.Comm(tosend)
-					self.FileProgress.config(text="Deleted", bg=self.defaultbg)
-			self.FileProgress.config(text="Deleted")
+					self.FileProgress.config(text="已删除", bg=self.defaultbg)
+			self.FileProgress.config(text="已删除")
 		except Exception as e:
 			if self.DebugMode:
 				self.DebugLog("FileDel", e)
-			self.FileProgress.config(text="File deleting failed!", bg="#ffdddd")
+			self.FileProgress.config(text="文件删除失败！", bg="#ffdddd")
 		self.UpdateUsage()
 		self.FilePrintList()
-	
+
 	def FileChangeOrderType(self):
 		if self.FileSort == 0: self.FileSort = 1
 		else: self.FileSort = 0
@@ -1347,37 +1346,37 @@ class App:
 
 	def FileCreateListLabel(self):
 		if self.FileSort == 0:
-			self.LabelFileType = Button(self.LabelFileHead, width=14, height=1, text="Type ▲", anchor=S, command=self.FileChangeOrderType)
+			self.LabelFileType = Button(self.LabelFileHead, width=14, height=1, text="类型 ▲", anchor=S, command=self.FileChangeOrderType)
 		elif self.FileSort == 1:
-			self.LabelFileType = Button(self.LabelFileHead, width=14, height=1, text="Type ▼", anchor=S, command=self.FileChangeOrderType)
+			self.LabelFileType = Button(self.LabelFileHead, width=14, height=1, text="类型 ▼", anchor=S, command=self.FileChangeOrderType)
 		else:
-			self.LabelFileType = Button(self.LabelFileHead, width=14, height=1, text="Type", anchor=S, command=self.FileChangeOrderType)
+			self.LabelFileType = Button(self.LabelFileHead, width=14, height=1, text="类型", anchor=S, command=self.FileChangeOrderType)
 		self.LabelFileType.pack(side=LEFT)
 
 		if self.FileSort == 2:
-			self.LabelFileName = Button(self.LabelFileHead, width=35, height=1, text="Filename ▲", anchor=S, command=self.FileChangeOrderName)
+			self.LabelFileName = Button(self.LabelFileHead, width=35, height=1, text="文件名 ▲", anchor=S, command=self.FileChangeOrderName)
 		elif self.FileSort == 3:
-			self.LabelFileName = Button(self.LabelFileHead, width=35, height=1, text="Filename ▼", anchor=S, command=self.FileChangeOrderName)
+			self.LabelFileName = Button(self.LabelFileHead, width=35, height=1, text="文件名 ▼", anchor=S, command=self.FileChangeOrderName)
 		else:
-			self.LabelFileName = Button(self.LabelFileHead, width=35, height=1, text="Filename", anchor=S, command=self.FileChangeOrderName)
+			self.LabelFileName = Button(self.LabelFileHead, width=35, height=1, text="文件名", anchor=S, command=self.FileChangeOrderName)
 		self.LabelFileName.pack(side=LEFT)
 
 		if self.FileSort == 4:
-			self.LabelFileSize = Button(self.LabelFileHead, width=12, height=1, text="Size ▲", anchor=S, command=self.FileChangeOrderSize)
+			self.LabelFileSize = Button(self.LabelFileHead, width=12, height=1, text="大小 ▲", anchor=S, command=self.FileChangeOrderSize)
 		elif self.FileSort == 5:
-			self.LabelFileSize = Button(self.LabelFileHead, width=12, height=1, text="Size ▼", anchor=S, command=self.FileChangeOrderSize)
+			self.LabelFileSize = Button(self.LabelFileHead, width=12, height=1, text="大小 ▼", anchor=S, command=self.FileChangeOrderSize)
 		else:
-			self.LabelFileSize = Button(self.LabelFileHead, width=12, height=1, text="Size", anchor=S, command=self.FileChangeOrderSize)
+			self.LabelFileSize = Button(self.LabelFileHead, width=12, height=1, text="大小", anchor=S, command=self.FileChangeOrderSize)
 		self.LabelFileSize.pack(side=LEFT)
 
 		if self.FileSort == 6:
-			self.LabelFileDate = Button(self.LabelFileHead, width=30, height=1, text="DateTime ▲", anchor=S, command=self.FileChangeOrderDate)
+			self.LabelFileDate = Button(self.LabelFileHead, width=30, height=1, text="日期时间 ▲", anchor=S, command=self.FileChangeOrderDate)
 		elif self.FileSort == 7:
-			self.LabelFileDate = Button(self.LabelFileHead, width=30, height=1, text="DateTime ▼", anchor=S, command=self.FileChangeOrderDate)
+			self.LabelFileDate = Button(self.LabelFileHead, width=30, height=1, text="日期时间 ▼", anchor=S, command=self.FileChangeOrderDate)
 		else:
-			self.LabelFileDate = Button(self.LabelFileHead, width=30, height=1, text="DateTime", anchor=S, command=self.FileChangeOrderDate)
-		self.LabelFileDate.pack(side=LEFT)        	
-	
+			self.LabelFileDate = Button(self.LabelFileHead, width=30, height=1, text="日期时间", anchor=S, command=self.FileChangeOrderDate)
+		self.LabelFileDate.pack(side=LEFT)
+
 
 	def FileCreateList(self):
 		self.filelist = Frame(self.content, bg="#ffffff")
@@ -1412,7 +1411,7 @@ class App:
 		self.ListboxFileDate.delete(0, END)
 		tosend = '{"msg_id":1282,"token":%s, "param":" -D -S"}' %self.token
 		for each in self.Comm(tosend)["listing"]:
-			if not each.keys()[0].endswith("/"):
+			if not list(each.keys())[0].endswith("/"):
 				FileListing.update(each)
 			else:
 				DirListing.update(each)
@@ -1434,7 +1433,7 @@ class App:
 
 			self.FileSize = {}
 			for filename in FileListing.keys():
-				filetype = "File"
+				filetype = "文件"
 				for ThisFileType in self.FileTypes.keys():
 					if filename.lower().endswith(ThisFileType):
 						filetype = self.FileTypes[ThisFileType]
@@ -1445,13 +1444,13 @@ class App:
 				CamFiles.append([filetype, filename, filesize, filedate])
 			if self.ExpertMode != "":
 				self.curPwdLabel.config(text=self.curPwd.replace('\/','/')[-35:])
-				
+
 				for ThisCamDir in sorted(CamDirs):
-					self.ListboxFileType.insert(END, "Folder")
+					self.ListboxFileType.insert(END, "文件夹")
 					self.ListboxFileName.insert(END, ThisCamDir[0])
 					self.ListboxFileSize.insert(END, "")
 					self.ListboxFileDate.insert(END, ThisCamDir[1])
-			
+
 			if self.FileSort == 0: FileSorted = sorted(CamFiles, key=itemgetter(0))
 			elif self.FileSort == 1: FileSorted = sorted(CamFiles, key=itemgetter(0), reverse=True)
 			elif self.FileSort == 2: FileSorted = sorted(CamFiles, key=itemgetter(1))
@@ -1477,14 +1476,14 @@ class App:
 		except Exception:
 			pass
 		self.content = Frame(self.mainwindow)
-		tosend = '{"msg_id":1283,"token":%s,"param":"\/var\/www\/DCIM"}' %self.token #lets seth initial path in camera
+		tosend = '{"msg_id":1283,"token":%s,"param":"\/var\/www\/DCIM"}' %self.token #设置相机中的初始路径
 		self.curPwd = self.Comm(tosend)["pwd"]
 		tosend = '{"msg_id":1282,"token":%s, "param":" -D -S"}' %self.token
 		resp = self.Comm(tosend)
 		if len(resp["listing"]) > 0:
-			self.MediaDir = resp["listing"][0].keys()[0]
+			self.MediaDir = list(resp["listing"][0].keys())[0]
 		if self.MediaDir != "":
-			tosend = '{"msg_id":1283,"token":%s,"param":"\/var\/www\/DCIM\/%s"}' %(self.token, self.MediaDir) #lets seth final path in camera
+			tosend = '{"msg_id":1283,"token":%s,"param":"\/var\/www\/DCIM\/%s"}' %(self.token, self.MediaDir) #设置相机中的最终路径
 			self.curPwd = self.Comm(tosend)["pwd"]
 		if self.ExpertMode != "":
 			self.curPwdFrame = Frame(self.topbuttons)
@@ -1493,19 +1492,19 @@ class App:
 			self.curPwdFrame.pack(side=RIGHT, padx=10)
 		self.FileCreateList()
 		self.FilePrintList()
-		self.FileButtonDownload = Button(self.content, text="Download", width=8, command=self.FileDownload)
+		self.FileButtonDownload = Button(self.content, text="下载", width=8, command=self.FileDownload)
 		self.FileButtonDownload.pack(side=LEFT, padx=5, pady=5)
 		if self.ExpertMode != "":
-			self.FileButtonUpload = Button(self.content, text="Upload", width=11, command=self.FileUpload, underline=0)
+			self.FileButtonUpload = Button(self.content, text="上传", width=11, command=self.FileUpload, underline=0)
 			self.master.bind("u",self.FileUpload)
 			self.master.bind("U",self.FileUpload)
 			self.FileButtonUpload.pack(side=LEFT, padx=5, pady=5)
-			self.FileButtonCwd = Button(self.content, text="Change folder", width=11, bg="#ffff66", command=self.FileCwd)
+			self.FileButtonCwd = Button(self.content, text="更改目录", width=11, bg="#ffff66", command=self.FileCwd)
 			self.FileButtonCwd.pack(side=LEFT, padx=5, pady=5)
-		self.FileButtonDelete = Button(self.content, text="DELETE", width=6, bg="#ff6666", command=self.FileDelete)
+		self.FileButtonDelete = Button(self.content, text="删除", width=6, bg="#ff6666", command=self.FileDelete)
 		self.master.bind("<Delete>",self.FileDelete)
 		self.FileButtonDelete.pack(side=LEFT, padx=5, pady=5)
-		self.FileProgress = Label(self.content, width=60, anchor=W, bd=1, relief=SUNKEN, text="Select a file", bg=self.defaultbg)
+		self.FileProgress = Label(self.content, width=60, anchor=W, bd=1, relief=SUNKEN, text="请选择一个文件", bg=self.defaultbg)
 		self.FileProgress.pack(side=RIGHT, fill=X, padx=10)
 		self.content.pack(side=TOP, fill=X)
 
@@ -1521,18 +1520,11 @@ class App:
 			self.Datasrv.shutdown(socket.SHUT_RDWR)
 			self.Datasrv.close()
 		except: pass
-		for thread in threading.enumerate():
-			if thread.isAlive():
-				try:
-					thread._Thread__stop()
-				except:
-					pass		
 
 		sys.exit()
 
 
-	
-	
+
 root = Tk()
 mysys = os.name
 if mysys == "nt":
@@ -1546,4 +1538,3 @@ if mysys == "nt":
 app = App(root)
 root.protocol("WM_DELETE_WINDOW", app.quit)
 root.mainloop()
-

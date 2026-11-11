@@ -1,14 +1,15 @@
-#! /usr/bin/env python
-#Â encoding: utf-8
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
-# Res andy
+# Res andy (Python 3 + 中文界面版)
 
 AppVersion = "0.1.1"
- 
- 
 
-import base64, functools, hashlib, json, os, platform, re, select, socket, subprocess, sys, tempfile, threading, time, tkFileDialog, tkMessageBox, urllib2, webbrowser, zlib
-from Tkinter import *
+
+
+import base64, functools, hashlib, json, os, platform, re, select, socket, subprocess, sys, tempfile, threading, time, urllib.request, webbrowser, zlib
+from tkinter import *
+from tkinter import messagebox
 from operator import itemgetter
 
 class App:
@@ -32,39 +33,39 @@ class App:
 		self.Jsonflip = {}
 		self.initcounter = {}
 		self.AllConnected = True
-				
+
 		self.DonateUrl = "http://sw.deltaflyer.cz/donate.html"
 		self.GitUrl = "https://github.com/deltaflyer4747/Xiaomi_Yi"
 		self.UpdateUrl = "https://raw.githubusercontent.com/deltaflyer4747/Xiaomi_Yi/master/Multi_version.txt"
 		self.master = master
 		self.master.geometry("445x250+300+75")
-		self.master.wm_title("Xiaomi Yi Multitrigger by Andy_S | ver %s" %AppVersion)
+		self.master.wm_title("小米小蚁 多机联拍 by Andy_S | 版本 %s" %AppVersion)
 		self.Settings()
-	
-		
-		# create a menu
+
+
+		# 创建菜单
 		self.menu = Menu(self.master)
 		root.config(menu=self.menu)
-		
+
 		self.Cameramenu = Menu(self.menu, tearoff=0)
-		self.menu.add_cascade(label="Camera", menu=self.Cameramenu, underline=0)
+		self.menu.add_cascade(label="相机", menu=self.Cameramenu, underline=0)
 		self.Cameramenu.add_separator()
-		self.Cameramenu.add_command(label="Exit", command=self.quit, underline=1)
-		
+		self.Cameramenu.add_command(label="退出", command=self.quit, underline=1)
+
 		self.helpmenu = Menu(self.menu, tearoff=0)
-		self.menu.add_cascade(label="Help", menu=self.helpmenu, underline=0)
-		self.helpmenu.add_command(label="Donate", command=lambda aurl=self.DonateUrl:webbrowser.open_new(aurl), underline=0)
-		self.helpmenu.add_command(label="About...", command=self.AboutProg, underline=0)
+		self.menu.add_cascade(label="帮助", menu=self.helpmenu, underline=0)
+		self.helpmenu.add_command(label="捐赠", command=lambda aurl=self.DonateUrl:webbrowser.open_new(aurl), underline=0)
+		self.helpmenu.add_command(label="关于...", command=self.AboutProg, underline=0)
 		self.UpdateCheck()
-		self.ConnWindow()		
+		self.ConnWindow()
 
 	def noaction(self, *args):
-		return				
+		return
 
 	def Settings(self, add="", rem=""):
-		if add == "" and rem == "": #nothing to add or remove = initial call
-			try: #open the settings file (if exists) and read the settings
-				filek = open("Multisettings.cfg","r")
+		if add == "" and rem == "": #没有要添加或删除的项 = 初始调用
+			try: #打开设置文件（如果存在）并读取设置
+				filek = open("Multisettings.cfg","r", encoding="utf-8")
 				filet = filek.readlines()
 				filek.close()
 				a=1
@@ -73,47 +74,47 @@ class App:
 						addr = line.split(" ")
 						self.CamAddresses[a] = [addr[0], int(addr[1])]
 						a+=1
-				
-			except Exception as e: #no settings file yet or file structure mismatch - lets create default one & set defaults
-				print e
-				filek = open("Multisettings.cfg_example","w")
+
+			except Exception as e: #还没有设置文件或文件结构不匹配 - 创建示例配置并提示
+				print(e)
+				filek = open("Multisettings.cfg_example","w", encoding="utf-8")
 				ConfigFile = '192.168.0.10 7878\n#192.168.0.11 7878'
-				filek.write(ConfigFile) 
+				filek.write(ConfigFile)
 				filek.close()
-				tkMessageBox.showerror("Config file is broken", "Config file is broken.\n\n Please use format\n\nIP.address.of.cam port\n\nfor example\n192.168.0.10 7878")
-	
+				messagebox.showerror("配置文件损坏", "配置文件损坏。\n\n 请使用如下格式\n\n相机IP地址 端口\n\n例如\n192.168.0.10 7878")
+
 	def ConnWindow(self):
-		self.camconn = Frame(self.master) #create connection window with buttons
-		b = Button(self.camconn, text="Connect Multitrigger", width=20, command=self.CamConnect)
+		self.camconn = Frame(self.master) #创建带按钮的连接窗口
+		b = Button(self.camconn, text="连接多机联拍", width=20, command=self.CamConnect)
 		b.focus_set()
 		b.grid(row=1, column=1, padx=10, pady=2)
 		self.camconn.pack(side=TOP, fill=X)
 
 	def UpdateCheck(self):
 		try:
-			newversion = urllib2.urlopen(self.UpdateUrl, timeout=2).read()
+			newversion = urllib.request.urlopen(self.UpdateUrl, timeout=2).read().decode("utf-8").strip()
 		except Exception:
 			newversion = "0"
 		if newversion > AppVersion:
-			if tkMessageBox.askyesno("New version found", "NEW VERSION FOUND (%s)\nYours is %s\n\nOpen download page?" %(newversion, AppVersion)):
+			if messagebox.askyesno("发现新版本", "发现新版本（%s）\n当前版本为 %s\n\n是否打开下载页面？" %(newversion, AppVersion)):
 				webbrowser.open_new(self.GitUrl)
 
 
-	
+
 	def AboutProg(self):
-		tkMessageBox.showinfo("About", "Multitrigger | ver. %s\nCreated by Andy_S, 2015\n\nandys@deltaflyer.cz" %AppVersion)
-	
+		messagebox.showinfo("关于", "多机联拍 | 版本 %s\n作者 Andy_S，2015\n\nandys@deltaflyer.cz" %AppVersion)
+
 	def CamConnect(self):
 		try:
 			socket.setdefaulttimeout(5)
 			for CamID in self.CamAddresses.keys():
 				camaddr, camport = self.CamAddresses[CamID]
-				self.CamSockets[CamID] = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
+				self.CamSockets[CamID] = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #创建套接字
 				self.CamSockets[CamID].setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				self.CamSockets[CamID].setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-				self.CamSockets[CamID].connect((camaddr, camport)) #open socket
+				self.CamSockets[CamID].connect((camaddr, camport)) #打开套接字
 			self.thread_read = threading.Thread(target=self.JsonReader)
-			self.thread_read.setDaemon(True)
+			self.thread_read.daemon = True
 			self.thread_read.setName('JsonReader')
 			self.thread_read.start()
 			waiter = 0
@@ -131,7 +132,7 @@ class App:
 							token = int(token)
 						except:
 							break
-					self.camconn.destroy() #hide connection selection
+					self.camconn.destroy() #隐藏连接选择界面
 					self.MainWindow()
 					break
 				else:
@@ -139,31 +140,31 @@ class App:
 						time.sleep(1)
 						waiter += 1
 					else:
-						raise Exception('Connection', 'failed') #throw an exception
+						raise Exception('Connection', 'failed') #抛出异常
 
 
 		except Exception as e:
 			self.AllConnected = False
-			tkMessageBox.showerror("Connect", "Cannot connect to the address specified")
+			messagebox.showerror("连接", "无法连接到指定的地址")
 			for CamID in self.CamSockets.keys():
 				try:
 					self.CamSockets[CamID].close()
 				except Exception:
 					pass
-	
+
 
 	def JsonLoop(self, CamID):
 		try:
 			ready = select.select([self.CamSockets[CamID]], [], [])
 			if ready[0]:
 				byte = self.CamSockets[CamID].recv(1)
-				if byte == "{":
+				if byte == b"{":
 					self.Jsoncounter[CamID] += 1
 					self.Jsonflip[CamID] = 1
-				elif byte == "}":
+				elif byte == b"}":
 					self.Jsoncounter[CamID] -= 1
 				self.Jsondata[CamID] += byte
-				
+
 				if self.Jsonflip[CamID] == 1 and self.Jsoncounter[CamID] == 0:
 					try:
 						data_dec = json.loads(self.Jsondata[CamID])
@@ -176,7 +177,7 @@ class App:
 						else:
 							raise Exception('Unknown data from camera ID ', CamID)
 					except Exception as e:
-						print data
+						print(data_dec)
 		except Exception:
 			self.connected[CamID] = False
 
@@ -189,14 +190,14 @@ class App:
 			self.Jsoncounter[CamID] = 0
 			self.Jsonflip[CamID] = 0
 			self.initcounter[CamID] = 0
-			self.CamSockets[CamID].send('{"msg_id":257,"token":0}') #auth to the camera
+			self.CamSockets[CamID].send('{"msg_id":257,"token":0}'.encode("utf-8")) #向相机认证
 			while self.initcounter[CamID] < 300:
 				self.JsonLoop(CamID)
 				self.initcounter[CamID] += 1
 				if len(self.JsonData[CamID]) > 0:
 					self.connected[CamID] = True
 					break
-					
+
 		while self.AllConnected:
 			for CamID in self.CamSockets.keys():
 				self.CamSockets[CamID].setblocking(0)
@@ -210,19 +211,19 @@ class App:
 			Jtosend["token"] = self.CamTokens[CamID]
 			tosend = json.dumps(Jtosend)
 			self.JsonData[CamID][msgid] = ""
-			self.CamSockets[CamID].send(tosend)
+			self.CamSockets[CamID].send(tosend.encode("utf-8"))
 
 		for CamID in self.CamSockets.keys():
 			while self.JsonData[CamID][msgid]=="":continue
-			if self.JsonData[CamID][msgid]["rval"] == -4: #wrong token, ackquire new one & resend - "workaround" for camera insisting on tokens
-				tkMessageBox.showerror("One camera didn't fire", "Camera #%s didn't fire properly\n\nYou will have to check the camera\nand shoot again." %CamID)
+			if self.JsonData[CamID][msgid]["rval"] == -4: #令牌错误，重新获取并重发 - 应对相机坚持要求令牌的“变通办法”
+				messagebox.showerror("有相机未触发", "%s 号相机未正常触发\n\n请检查该相机\n后重新拍摄。" %CamID)
 				self.CamTokens[CamID] = ""
-				self.CamSockets[CamID].send('{"msg_id":257,"token":0}')
+				self.CamSockets[CamID].send('{"msg_id":257,"token":0}'.encode("utf-8"))
 				while self.CamTokens[CamID]=="":continue
 				Jtosend["token"] = self.CamTokens[CamID]
 				tosend = json.dumps(Jtosend)
 				self.JsonData[CamID][msgid] = ""
-				self.CamSockets[CamID].send(tosend)
+				self.CamSockets[CamID].send(tosend.encode("utf-8"))
 				while self.JsonData[CamID][msgid]=="":continue
 		return self.JsonData[1][msgid]
 
@@ -232,7 +233,7 @@ class App:
 		self.mainwindow.pack(side=TOP, fill=X)
 		self.MenuControl()
 
-	
+
 	def MenuControl(self, *args):
 		try:
 			self.content.destroy()
@@ -242,24 +243,24 @@ class App:
 		self.content = Frame(self.mainwindow)
 		self.controlbuttons = Frame(self.content)
 		if self.camconfig["capture_mode"] == "precise quality":
-			self.bphoto = Button(self.controlbuttons, text="Take a \nPHOTO", width=13, command=self.ActionPhoto, bg="#ccccff")
+			self.bphoto = Button(self.controlbuttons, text="拍一张\n照片", width=13, command=self.ActionPhoto, bg="#ccccff")
 		elif self.camconfig["capture_mode"] == "precise quality cont.":
 			if self.camconfig["precise_cont_capturing"] == "off":
-				self.bphoto = Button(self.controlbuttons, text="Start\nTIMELAPSE", width=13, command=self.ActionPhoto, bg="#66ff66")
+				self.bphoto = Button(self.controlbuttons, text="开始\n延时摄影", width=13, command=self.ActionPhoto, bg="#66ff66")
 			else:
-				self.bphoto = Button(self.controlbuttons, text="Stop\nTIMELAPSE", width=13, command=self.ActionPhoto, bg="#ff6666")
+				self.bphoto = Button(self.controlbuttons, text="停止\n延时摄影", width=13, command=self.ActionPhoto, bg="#ff6666")
 		elif self.camconfig["capture_mode"] == "burst quality":
-			self.bphoto = Button(self.controlbuttons, text="Burst \nPHOTOS", width=13, command=self.ActionPhoto, bg="#ffccff")
+			self.bphoto = Button(self.controlbuttons, text="连拍\n照片", width=13, command=self.ActionPhoto, bg="#ffccff")
 		elif self.camconfig["capture_mode"] == "precise self quality":
-			self.bphoto = Button(self.controlbuttons, text="Delayed\nPHOTO", width=13, command=self.ActionPhoto, bg="#ccffff")
+			self.bphoto = Button(self.controlbuttons, text="定时\n拍照", width=13, command=self.ActionPhoto, bg="#ccffff")
 		self.bphoto.pack(side=LEFT, padx=12, pady=5)
-		
-	
-		self.brecord = Button(self.controlbuttons, text="Start\nRecording", width=7, command=self.ActionRecordStart, bg="#66ff66")
+
+
+		self.brecord = Button(self.controlbuttons, text="开始\n录像", width=7, command=self.ActionRecordStart, bg="#66ff66")
 		self.brecord.pack(side=LEFT, padx=10, ipadx=5, pady=5)
 		if self.camconfig["capture_mode"] == "precise quality cont.":
 			if self.camconfig["precise_cont_capturing"] == "on":
-				self.brecord.config(state=DISABLED) 
+				self.brecord.config(state=DISABLED)
 				self.brecord.update_idletasks()
 
 		if self.ZoomLevelValue == "":
@@ -274,38 +275,38 @@ class App:
 			self.thread_zoom.start()
 
 
-		
+
 		self.ZoomLevelFrame = Frame(self.controlbuttons, width=50)
 		self.ZoomLevel = Scale(self.ZoomLevelFrame, from_=0, to=100, orient=HORIZONTAL, width=10, length=150, command=self.ActionZoomChange)
 		self.ZoomLevel.set(ThisZoomLevelValue)
 		self.ZoomLevel.pack(side=TOP)
-		Label(self.ZoomLevelFrame, width=10, text="Zoom level", anchor=W).pack(side=TOP)
+		Label(self.ZoomLevelFrame, width=10, text="变焦级别", anchor=W).pack(side=TOP)
 		self.ZoomLevelFrame.pack(side=TOP, fill=X, padx=5)
 
 		self.controlbuttons.pack(side=TOP, fill=X)
 
 
 		self.FramePhotoButtonMod = Frame(self.content)
-		self.Photo_options = {"precise quality":"Single","precise quality cont.":"Timelapse","burst quality":"Burst","precise self quality":"Delayed"}
+		self.Photo_options = {"precise quality":"单拍","precise quality cont.":"延时","burst quality":"连拍","precise self quality":"定时"}
 		self.Photo_thisvalue = StringVar(self.FramePhotoButtonMod)
-		self.Photo_thisvalue.set(self.Photo_options[self.camconfig["capture_mode"]]) # actual value
+		self.Photo_thisvalue.set(self.Photo_options[self.camconfig["capture_mode"]]) #实际值
 		self.Photo_thisvalue.trace("w", self.MenuPhoto_changed)
-		self.Photo_valuebox = OptionMenu(self.FramePhotoButtonMod, self.Photo_thisvalue, *self.Photo_options.values())
+		self.Photo_valuebox = OptionMenu(self.FramePhotoButtonMod, self.Photo_thisvalue, *list(self.Photo_options.values()))
 		self.Photo_valuebox.config(width=10)
 		self.Photo_valuebox.pack(side=LEFT, padx=10)
 		self.FramePhotoButtonMod.pack(side=TOP, fill=X)
 
 
 		self.content.pack(side=TOP, fill=X)
-	
+
 	def MenuPhoto_changed(self, *args):
-		myoption = self.Photo_options.keys()[self.Photo_options.values().index(self.Photo_thisvalue.get())]
+		myoption = list(self.Photo_options.keys())[list(self.Photo_options.values()).index(self.Photo_thisvalue.get())]
 		tosend = '{"msg_id":2, "type":"capture_mode", "param":"%s"}' %(myoption)
 		self.Comm(tosend)
 		self.camconfig["capture_mode"] = myoption
 		self.MenuControl()
 
-		
+
 	def ActionZoomChangeThread(self):
 		while self.AllConnected:
 			if self.ZoomLevelOldValue != self.ZoomLevelValue:
@@ -332,43 +333,34 @@ class App:
 	def ActionRecordStart(self):
 		tosend = '{"msg_id":513}'
 		self.Comm(tosend)
-		self.brecord.config(text="STOP\nrecording", command=self.ActionRecordStop, bg="#ff6666")
+		self.brecord.config(text="停止\n录像", command=self.ActionRecordStop, bg="#ff6666")
 		self.brecord.update_idletasks()
 		self.bphoto.config(state=DISABLED)
-		self.bphoto.update_idletasks() 
+		self.bphoto.update_idletasks()
 
 	def ActionRecordStop(self):
 		tosend = '{"msg_id":514}'
 		self.Comm(tosend)
-		self.brecord.config(text="START\nrecording", command=self.ActionRecordStart, bg="#66ff66")
+		self.brecord.config(text="开始\n录像", command=self.ActionRecordStart, bg="#66ff66")
 		self.brecord.update_idletasks()
 		self.bphoto.config(state="normal")
-		self.bphoto.update_idletasks() 
-	
+		self.bphoto.update_idletasks()
+
 
 	def quit(self):
 		self.AllConnected = False
 		time.sleep(1)
-		try:
-			self.srv.shutdown(socket.SHUT_RDWR)
-			self.srv.close()
-		except: pass
-		try:
-			self.Datasrv.shutdown(socket.SHUT_RDWR)
-			self.Datasrv.close()
-		except: pass
-		for thread in threading.enumerate():
-			if thread.isAlive():
-				try:
-					thread._Thread__stop()
-				except:
-					pass		
+		for CamID in self.CamSockets.keys():
+			try:
+				self.CamSockets[CamID].shutdown(socket.SHUT_RDWR)
+				self.CamSockets[CamID].close()
+			except: pass
 
 		sys.exit()
 
 
-	
-	
+
+
 root = Tk()
 mysys = os.name
 if mysys == "nt":
@@ -382,4 +374,3 @@ if mysys == "nt":
 app = App(root)
 root.protocol("WM_DELETE_WINDOW", app.quit)
 root.mainloop()
-

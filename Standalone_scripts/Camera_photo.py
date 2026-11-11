@@ -1,7 +1,9 @@
-#! /usr/bin/env python
-# encoding: windows-1250
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
-# Res Andy 
+# 作者 Andy（中文版）
+
+# 功能：命令相机拍摄一张照片
 
 import os, re, sys, time, socket
 from settings import camaddr
@@ -10,17 +12,18 @@ from settings import camport
 srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 srv.connect((camaddr, camport))
 
-srv.send('{"msg_id":257,"token":0}')
+# 向相机认证以获取令牌
+srv.send('{"msg_id":257,"token":0}'.encode("utf-8"))
 
-data = srv.recv(512)
+data = srv.recv(512).decode("utf-8", "ignore")
 if "rval" in data:
-	token = re.findall('"param": (.+) }',data)[0]	
+	token = re.findall('"param": (.+) }',data)[0]
 else:
-	data = srv.recv(512)
+	data = srv.recv(512).decode("utf-8", "ignore")
 	if "rval" in data:
-		token = re.findall('"param": (.+) }',data)[0]	
+		token = re.findall('"param": (.+) }',data)[0]
 
-
+# 发送拍照命令
 tosend = '{"msg_id":769,"token":%s}' %token
-srv.send(tosend)
+srv.send(tosend.encode("utf-8"))
 srv.recv(512)
