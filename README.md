@@ -1,53 +1,73 @@
-# Xiaomi_Yi
-## 一个基于Python的小蚁运动相机控制脚本
-## 汉化：Tiya Anlite
-## Xiaomi Yi Camera Control&Configure GUI and via python scripts
+# Xiaomi Yi Control
 
-## 原作者项目地址：https://github.com/deltaflyer4747/Xiaomi_Yi
-## GitUrl：https://github.com/deltaflyer4747/Xiaomi_Yi
+## 基于Python的小蚁运动相机控制脚本
 
-## 向原作者捐款：http://sw.deltaflyer.cz/donate.html
-## Donate：http://sw.deltaflyer.cz/donate.html
+汉化：
+```
+Tiya Anlite
+Schips.huang
+```
 
-### Multiplatform脚本可以运行于Windows, Linux 和 Mac
-### Multiplatform, runs on Windows, Linux and Mac!
+ref : https://github.com/deltaflyer4747/Xiaomi_Yi 
 
-#### 通过PC与相机使用WIFI连接，可控制选项：拍照，录像与实时预览，配置和文件管理
-#### Control (Photo, Record, Live View), Configure & Manage files via PC & Wifi.
+## 程序说明
 
-### CC.exe目前尚未构建完成，汉化完毕之后会构建
-### CC.exe is compiled - NO PYTHON INSTALLATION NEEDED
+CC.pyw 主程序（Python 3脚本）
 
-#### CC.pyw为主脚本，需要窗口界面Tkinter库的支持
-#### CC.pyw - for all systems capable of running python with Tkinter
+通过PC与相机使用WIFI连接，可控制选项：拍照，录像与实时预览，配置和文件管理
+
+## Web 版（纯 JS 实现）
+
+`web/` 目录是浏览器版控制台，功能与 `CC.pyw` 一一对应：按拍照 / 录像 / 实时预览、
+拍摄模式与变焦、全部可写参数配置、文件浏览下载删除上传、
+格式化 / 重启 / 恢复出厂 / 启用 Telnet、通信日志。
+
+关于「纯 web」：浏览器没有任何 API 能直接发起 TCP 连接到相机的 7878 端口
+（WebSocket 只能连 WS 服务，Direct Sockets 只在 Chrome 的 IWA 包里可用），
+所以页面外面还需要一个本地中转进程。这一层用 Node.js 实现，整个项目就是纯 JS 技术栈：
+
+```
+cd web
+npm install        # 装 ws（可选；不装也能跑，只是页面退化为 HTTP 轮询）
+npm start          # 自动打开 http://127.0.0.1:8000
+node server.mjs --port 8080 --no-browser
+```
+
+连上相机的 WiFi 后，在页面顶部填入相机 IP（默认 192.168.42.1，端口 7878）点「连接」即可。
+
+- `web/index.html` 页面本体：样式与脚本全部内联，无框架、无构建、无 CDN
+- `web/server.mjs` 本地中转：TCP 7878 客户端 + 静态页面 + REST 接口 + WebSocket 推送
+- `web/package.json` npm 脚本与依赖
+
+页面与中转之间的接口：`GET /api/status`、`POST /api/action`、`GET /api/download`、
+`POST /api/upload`、`WS /ws`（相机状态实时推送，失败自动回退到 1.5 秒轮询）。
+
+实时预览仍是 RTSP 流：页面只在相机上开启取流并给出 `rtsp://相机IP:554/live` 地址，
+用 VLC / PotPlayer 打开即可，浏览器本身不能播放 RTSP。
 
 
--------
-##### Obsolete
+## Standalone_scripts
 
-运行此脚本的Python版本为2.7.x
-For these scripts you need Python 2.7.x https://www.python.org/downloads/ 
+### 配置参数
 
-不建议使用windows自带的记事本，建议使用其他的文本编辑软件
-Windows Notepad is derping about newline style, use something better than that, like Notepad++, PsPad, or even WordPad
+编辑`options.txt`中的配置项，再运行`Camera_set.py`脚本便可设置相机参数
 
-在settings.py中设置相机IP，无需再运行此脚本
-Edit settings.py with your camera IP. No need to launch this script
+`Camera_all_options.py`脚本会显示所有可选参数和值
 
-编辑options.txt中的配置项，再运行Camera_set.py脚本便可设置相机参数
-* Edit options.txt (un/comment lines as needed) and launch Camera_set.py to set uncommented options
+`Camera_get.py`脚本获取目前相机的配置，可以将输出的结果和
 
-Camera_all_options.py脚本会显示所有可选参数和值
-* Camera_all_options.py displays all possible options for all possible variables
+先查：运行 Camera_get.py 看当前整体配置 → 觉得不够详细就跑 Camera_all_options.py，弄清每个参数有哪些合法取值（options.txt 里 # 注释掉的备选值其实就是从这里来的）。
+再改：编辑 options.txt，把想要的取值那行去掉行首 #、把不想要的行加上 #（每类参数只能保留一行未注释，否则后面的会覆盖前面的）。
+执行：运行 Camera_set.py，未注释的命令按顺序逐条下发到相机。
 
-Camera_get.py脚本显示目前相机的配置
-* Camera_get.py displays current settings from camera
+### 拍摄控制
 
 Camera_photo.py脚本可以使相机拍摄一张照片
-* Camera_photo.py captures single photo
+
+### 录制控制
 
 Camera_record_start.py和Camera_record_stop.py脚本可以控制录像的开始与停止
-* Camera_record_start.py & Camera_record_stop.py starts / stops video recording respectively
+
+### RTSP拉流控制
 
 Camera_video_stream.py脚本将会打开实时预览，以便通过支持RTSP协议的软件查看（例如VLC软件）
-* Camera_video_stream.py enables streaming for RTSP capable player (for example VLC)

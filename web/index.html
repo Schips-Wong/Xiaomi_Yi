@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小蚁运动相机 · Web 控制台</title>
+<style>
+  :root{
+    --bg:#0f1216; --bg2:#161b22; --bg3:#1d242e; --line:#2a323d;
+    --tx:#e6edf3; --tx2:#9aa7b4; --accent:#ff7a2f; --accent2:#4da3ff;
+    --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--tx); font:14px/1.55 "Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    display:flex; flex-direction:column;
+  }
+  header{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding:10px 18px; background:var(--bg2); border-bottom:1px solid var(--line);
+  }
+  .brand{font-size:16px; font-weight:600; letter-spacing:.3px}
+  .brand b{color:var(--accent)}
+  .brand span{color:var(--tx2); font-weight:400; font-size:12px; margin-left:6px}
+  .spacer{flex:1}
+  .conn{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  input,select,button{font:inherit; color:var(--tx); background:var(--bg3); border:1px solid var(--line); border-radius:8px}
+  input,select{padding:6px 9px; outline:none}
+  input:focus,select:focus{border-color:var(--accent2)}
+  button{padding:6px 14px; cursor:pointer; transition:.15s}
+  button:hover:not(:disabled){border-color:#3f4b5b; background:#232c38}
+  button:disabled{opacity:.42; cursor:not-allowed}
+  button.primary{background:var(--accent); border-color:var(--accent); color:#17110b; font-weight:600}
+  button.primary:hover:not(:disabled){background:#ff8f4d}
+  button.ghost{background:transparent}
+  .pill{font-size:12px; padding:3px 10px; border-radius:99px; border:1px solid var(--line); color:var(--tx2)}
+  .pill.on{color:#0d1117; background:var(--ok); border-color:var(--ok); font-weight:600}
+  .pill.busy{color:#17110b; background:var(--warn); border-color:var(--warn); font-weight:600}
+
+  nav{display:flex; gap:4px; padding:0 18px; background:var(--bg2); border-bottom:1px solid var(--line)}
+  nav button{background:none; border:none; border-bottom:2px solid transparent; border-radius:0; padding:10px 16px; color:var(--tx2)}
+  nav button.active{color:var(--tx); border-bottom-color:var(--accent)}
+  nav button:hover{color:var(--tx); background:none}
+
+  main{flex:1; overflow:auto; padding:18px; max-width:1180px; width:100%; margin:0 auto}
+  section{display:none; animation:fade .18s ease}
+  section.active{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--bg2); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px}
+  .card h3{margin:0 0 12px; font-size:13px; font-weight:600; color:var(--tx2); letter-spacing:.5px; text-transform:uppercase}
+
+  .btns{display:flex; gap:12px; flex-wrap:wrap}
+  .big{
+    width:132px; height:88px; border-radius:14px; display:flex; flex-direction:column; gap:2px;
+    align-items:center; justify-content:center; font-size:15px; font-weight:600; line-height:1.25;
+  }
+  .big small{font-size:11px; font-weight:400; color:var(--tx2)}
+  .big.rec{background:#3a1d1d; border-color:#5a2b2b}
+  .big.photo{background:#2b2430; border-color:#443a52}
+  .big.stream{background:#2a2919; border-color:#4c4826}
+
+  .field{display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap}
+  .field label{min-width:110px; color:var(--tx2)}
+  .hint{color:var(--tx2); font-size:12px}
+
+  .warn{display:none; margin-bottom:14px; padding:10px 14px; border-radius:10px; font-size:13px;
+        background:#3a2d16; border:1px solid #5c451c; color:#f0d9a8}
+  .warn.show{display:block}
+
+  .cfg-row{display:grid; grid-template-columns:180px 260px 1fr; gap:12px; align-items:center;
+           padding:7px 4px; border-bottom:1px dashed #232b35}
+  .cfg-row:last-child{border-bottom:none}
+  .cfg-name{font-family:ui-monospace,Consolas,monospace; font-size:12.5px; color:#c6d3e0}
+  .cfg-hint{font-size:12px; color:var(--tx2)}
+  .cfg-ctl{display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+  .cfg-ctl select,.cfg-ctl input{width:100%; max-width:250px}
+  .changed .cfg-name{color:var(--accent)}
+  .changed .cfg-name::after{content:" ●"}
+
+  table.files{width:100%; border-collapse:collapse; font-size:13px}
+  table.files th{text-align:left; color:var(--tx2); font-weight:500; font-size:12px;
+                 padding:6px 8px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; white-space:nowrap}
+  table.files th:hover{color:var(--tx)}
+  table.files td{padding:6px 8px; border-bottom:1px solid #1b222b; white-space:nowrap;
+                 overflow:hidden; text-overflow:ellipsis; max-width:420px}
+  table.files tbody tr:hover{background:#1a212a}
+  .fname{cursor:pointer; color:var(--accent2)}
+  .fname.dir{color:#e3b341; font-weight:600}
+  .filetools{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px}
+  .path{font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--tx2);
+        background:var(--bg3); padding:5px 10px; border-radius:8px; border:1px solid var(--line)}
+
+  pre.log{margin:0; max-height:320px; overflow:auto; font-family:ui-monospace,Consolas,monospace;
+          font-size:12px; line-height:1.5; color:#9fb0c0; white-space:pre-wrap; word-break:break-all}
+  pre.log .tx{color:#7ec4ff}
+  pre.log .rx{color:#8bd17c}
+  pre.log .ev{color:#e3b341}
+  pre.log .er{color:#f85149}
+
+  footer{display:flex; gap:18px; flex-wrap:wrap; padding:8px 18px; font-size:12px; color:var(--tx2);
+         background:var(--bg2); border-top:1px solid var(--line)}
+  footer b{color:var(--tx); font-weight:500}
+
+  #toasts{position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:8px; z-index:50}
+  .toast{padding:9px 14px; border-radius:10px; font-size:13px; max-width:340px;
+         background:#222b36; border:1px solid var(--line); box-shadow:0 6px 24px rgba(0,0,0,.45)}
+  .toast.bad{border-color:#5c2626; background:#3a1d1d; color:#ffb4b0}
+  .toast.ok{border-color:#22502c; background:#1c3324; color:#b6f0c4}
+  @media(max-width:860px){
+    .cfg-row{grid-template-columns:1fr}
+    .big{width:104px; height:80px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">小蚁 <b>运动相机</b><span>Web 控制台</span></div>
+  <div class="spacer"></div>
+  <div class="conn">
+    <input id="ip" style="width:130px" placeholder="相机 IP" value="192.168.42.1">
+    <input id="port" style="width:70px" placeholder="7878" value="7878" title="JSON 控制端口">
+    <button class="primary" id="btnConnect">连接</button>
+    <button class="ghost" id="btnDisconnect" disabled>断开</button>
+    <span class="pill" id="pill">未连接</span>
+  </div>
+</header>
+
+<nav>
+  <button data-tab="control" class="active">拍摄控制</button>
+  <button data-tab="config">相机配置</button>
+  <button data-tab="files">文件管理</button>
+  <button data-tab="expert">专家 / 日志</button>
+</nav>
+
+<main>
+  <div class="warn" id="warn"></div>
+
+  <!-- ============ 拍摄控制 ============ -->
+  <section id="tab-control" class="active">
+    <div class="card">
+      <h3>拍摄</h3>
+      <div class="btns">
+        <button class="big photo" id="btnPhoto">拍一张<small>照片</small></button>
+        <button class="big rec" id="btnRecord">开始<small>录像</small></button>
+        <button class="big stream" id="btnStream">实时<small>预览</small></button>
+      </div>
+      <div id="rtspBox" class="field" style="display:none; margin-top:14px">
+        <label>RTSP 地址</label>
+        <input id="rtspUrl" readonly style="width:320px">
+        <button id="btnCopyRtsp">复制</button>
+        <span class="hint">用 VLC / PotPlayer 打开即可看到画面</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>拍摄模式</h3>
+      <div class="field">
+        <label>模式</label>
+        <select id="captureMode">
+          <option value="precise quality">单拍（precise quality）</option>
+          <option value="precise quality cont.">延时摄影（precise quality cont.）</option>
+          <option value="burst quality">连拍（burst quality）</option>
+          <option value="precise self quality">定时自拍（precise self quality）</option>
+        </select>
+        <span class="hint" id="modeHint"></span>
+      </div>
+      <div class="field">
+        <label>变焦级别</label>
+        <input type="range" id="zoom" min="0" max="100" value="0" style="width:320px; padding:0">
+        <b id="zoomVal">0</b>
+        <span class="hint">松开滑块后下发到相机</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>相机操作</h3>
+      <div class="btns">
+        <button id="btnInfo">相机信息</button>
+        <button id="btnSyncClock">同步相机时钟</button>
+        <button id="btnBattery">刷新电量</button>
+        <button id="btnUsage">刷新容量</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 相机配置 ============ -->
+  <section id="tab-config">
+    <div class="card">
+      <h3>可写参数</h3>
+      <div class="filetools">
+        <button class="primary" id="btnApply" disabled>应用修改</button>
+        <button id="btnReloadCfg">重新读取</button>
+        <span class="hint" id="cfgStatus">连接后可读取相机可设置项</span>
+      </div>
+      <div id="cfgList"></div>
+    </div>
+  </section>
+
+  <!-- ============ 文件管理 ============ -->
+  <section id="tab-files">
+    <div class="card">
+      <h3>相机存储</h3>
+      <div class="filetools">
+        <span class="path" id="filePath">/var/www/DCIM</span>
+        <button id="btnUp">上一级</button>
+        <button id="btnRefreshFiles">刷新</button>
+        <button id="btnDownload">下载选中</button>
+        <button id="btnDelete" style="border-color:#5a2b2b">删除选中</button>
+        <input type="file" id="uploadInput" style="display:none">
+        <button id="btnUpload">上传文件</button>
+        <span class="hint" id="fileStatus"></span>
+      </div>
+      <table class="files">
+        <thead>
+          <tr>
+            <th style="width:34px"><input type="checkbox" id="checkAll" style="width:auto"></th>
+            <th data-sort="type" style="width:80px">类型</th>
+            <th data-sort="name">文件名</th>
+            <th data-sort="size" style="width:110px">大小</th>
+            <th data-sort="date" style="width:180px">日期时间</th>
+          </tr>
+        </thead>
+        <tbody id="fileBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 专家 / 日志 ============ -->
+  <section id="tab-expert">
+    <div class="card">
+      <h3>危险操作</h3>
+      <div class="btns">
+        <button id="btnFormat" style="border-color:#5a2b2b">格式化存储卡</button>
+        <button id="btnReboot" style="border-color:#5a2b2b">重启相机</button>
+        <button id="btnFactory" style="border-color:#5a2b2b">恢复出厂设置</button>
+        <button id="btnTelnet" style="border-color:#4c4826">启用 Telnet</button>
+        <button id="btnVars">显示所有相机变量</button>
+      </div>
+      <p class="hint">格式化会清空存储卡上的全部照片和视频；重启与恢复出厂会断开连接。</p>
+    </div>
+
+    <div class="card">
+      <h3>全部相机变量</h3>
+      <pre class="log" id="varsBox">（点“显示所有相机变量”）</pre>
+    </div>
+
+    <div class="card">
+      <h3>通信日志</h3>
+      <div class="filetools">
+        <button id="btnLogRefresh">刷新日志</button>
+        <button id="btnLogClear">清空显示</button>
+        <span class="hint">tx = 发往相机，rx = 相机返回，ev = 相机上报事件</span>
+      </div>
+      <pre class="log" id="logBox"></pre>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>相机 <b id="stConn">未连接</b></span>
+  <span>电池 <b id="stBattery">--</b></span>
+  <span>容量 <b id="stUsage">--</b></span>
+  <span>状态 <b id="stApp">--</b></span>
+  <span>存储卡 <b id="stSd">--</b></span>
+  <span>通道 <b id="channel">连接中</b></span>
+</footer>
+
+<div id="toasts"></div>
+
+<script>
+"use strict";
+
+/* ------------------------------ 配置项说明 ------------------------------ */
+const DESC = {
+  app_status: "相机当前工作状态（只读）：idle / vf / record / capture 等",
+  auto_low_light: "低光环境下自动增加曝光时间",
+  auto_power_off: "无操作指定时间后自动关机",
+  burst_capture_number: "连拍模式的张数与速率",
+  buzzer_ring: "相机定位提示音开关",
+  buzzer_volume: "提示音音量：high / low / mute",
+  camera_clock: "把相机时钟同步为本机时间",
+  capture_default_mode: "硬件按键切换到拍摄时进入的模式",
+  capture_mode: "拍照按钮的行为，在「拍摄控制」页切换",
+  dev_functions: "设备功能位掩码（只读）",
+  dual_stream_status: "双码流状态（只读）",
+  emergency_file_backup: "检测到震动时锁定文件（行车记录仪）",
+  hw_version: "硬件版本号（只读）",
+  led_mode: "指示灯行为",
+  loop_record: "存储卡满时覆盖最旧的文件",
+  meter_mode: "测光模式：center / average / spot",
+  osd_enable: "在 HDMI / AV 输出画面上叠加状态信息",
+  photo_quality: "照片画质：S.Fine / Fine / Normal",
+  photo_size: "照片分辨率，16M/13M/8M/5M 为 4:3，12M 为 16:9",
+  photo_stamp: "在照片上叠加拍摄日期和时间",
+  piv_enable: "PIV 多机同步功能状态（只读）",
+  precise_cont_capturing: "延时摄影是否正在拍摄（只读）",
+  precise_cont_time: "延时摄影两张照片之间的间隔",
+  precise_self_remain_time: "定时自拍剩余倒计时（只读）",
+  precise_self_running: "定时自拍运行状态",
+  precise_selftime: "定时自拍的延迟时间",
+  preview_status: "实时预览开关，关闭可省电",
+  quick_record_time: "开机即录的最长时长（只读）",
+  rc_button_mode: "遥控器按键功能",
+  rec_default_mode: "开机默认录像模式",
+  rec_mode: "当前录像模式",
+  record_photo_time: "缩时录像单段时长 / 抽帧间隔",
+  save_log: "是否保存相机运行日志",
+  sd_card_status: "存储卡状态（只读）：insert / no",
+  sdcard_need_format: "存储卡是否需要格式化（只读）",
+  serial_number: "相机序列号（只读）",
+  start_wifi_while_booted: "开机时自动启用 WiFi",
+  streaming_status: "取流（RTSP）状态（只读）",
+  support_auto_low_light: "固件是否支持低光自动增曝（只读）",
+  sw_version: "固件版本号（只读）",
+  system_default_mode: "开机时硬件按键进入的默认模式",
+  system_mode: "当前硬件触发模式",
+  timelapse_photo: "照片延时状态（只读）",
+  timelapse_video: "缩时录像抽帧间隔：off 或 0.5~60 秒",
+  timelapse_video_duration: "缩时视频时长，多数固件不支持设置",
+  timelapse_video_resolution: "缩时录像使用的分辨率",
+  video_output_dev_type: "视频输出接口：HDMI / AV(tv) / off",
+  video_quality: "录像画质：S.Fine / Fine / Normal",
+  video_resolution: "录像分辨率，受 video_standard 限制",
+  video_rotate: "画面旋转 180°（倒置安装时使用）",
+  video_stamp: "在视频上叠加日期和时间",
+  video_standard: "视频制式，决定可选的帧率",
+  warp_enable: "鱼眼矫正：开 = 画面无鱼眼",
+  wifi_password: "WiFi 密码，应用后需重启相机生效",
+  wifi_ssid: "WiFi 名称，应用后需重启相机生效",
+};
+
+const VALUE_LABEL = {
+  "on": "开", "off": "关",
+  "capture": "拍照模式", "record": "录像模式",
+  "precise quality": "单拍", "precise quality cont.": "延时摄影",
+  "burst quality": "连拍", "precise self quality": "定时自拍",
+  "S.Fine": "超精细", "Fine": "精细", "Normal": "普通",
+  "center": "中央重点", "average": "平均", "spot": "点测光",
+  "high": "高", "low": "低", "mute": "静音",
+  "all enable": "全部开启", "all disable": "全部关闭", "status enable": "仅状态灯",
+  "hdmi": "HDMI 输出", "tv": "AV 输出",
+  "record_timelapse": "缩时录像",
+  "mode_shutter": "按键切模式+快门", "record_capture": "按键切录像/拍照",
+  "insert": "已插入", "no": "未插入", "no-need": "无需格式化",
+};
+
+const APP_STATUS = {
+  idle: "空闲", vf: "取景中", record: "录像中", recording: "录像中",
+  capture: "拍照中", precise_cont_capturing: "延时摄影中",
+  burst_capturing: "连拍中", precise_capturing: "定时拍摄中",
+  operation_done: "操作完成",
+};
+
+/* ------------------------------ 基础工具 ------------------------------ */
+const $ = (s) => document.querySelector(s);
+const state = {
+  connected: false, config: {}, settable: {}, cursor: 0,
+  pwd: "/var/www/DCIM", entries: [], sort: { key: "date", dir: -1 },
+  pending: new Map(), cfgLoaded: false, recState: false,
+  addr: "", lastError: "",
+};
+
+function toast(msg, kind) {
+  const el = document.createElement("div");
+  el.className = "toast" + (kind ? " " + kind : "");
+  el.textContent = msg;
+  $("#toasts").appendChild(el);
+  setTimeout(() => el.remove(), kind === "bad" ? 5200 : 2600);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function pretty(v) {
+  const key = String(v);
+  return VALUE_LABEL[key] ? VALUE_LABEL[key] + "（" + key + "）" : key;
+}
+
+async function api(body) {
+  const r = await fetch("api/action", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  let j;
+  try { j = await r.json(); } catch (e) { throw new Error("HTTP " + r.status); }
+  if (!j.ok) throw new Error(j.error || "操作失败");
+  return j;
+}
+
+/* ------------------------------ 状态通道 ------------------------------ */
+/* 优先用 WebSocket 由服务端推送状态；不支持时退化为 HTTP 轮询 */
+let pollTimer = null;
+let ws = null;
+let wsOk = false;
+
+async function pollOnce() {
+  try {
+    const r = await fetch("api/status?after=" + state.cursor, { cache: "no-store" });
+    applyStatus(await r.json());
+  } catch (e) {
+    /* 本地服务没起来时静默重试 */
+  }
+}
+
+function startPolling() {
+  if (pollTimer) return;
+  pollOnce();
+  pollTimer = setInterval(pollOnce, 1500);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+function wsUrl() {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  return proto + "//" + location.host + "/ws";
+}
+
+function startWS() {
+  if (location.protocol === "file:") { startPolling(); return; }
+  if (ws && (ws.readyState === 0 || ws.readyState === 1)) return;
+  let socket;
+  try { socket = new WebSocket(wsUrl()); } catch (e) { startPolling(); return; }
+  ws = socket;
+
+  const fallback = setTimeout(() => { if (!wsOk) startPolling(); }, 2000);
+
+  socket.onopen = () => {
+    wsOk = true;
+    clearTimeout(fallback);
+    stopPolling();
+    scheduleWSBadge(true);
+  };
+  socket.onmessage = (ev) => {
+    let m;
+    try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.type === "status" && m.data) applyStatus(m.data);
+  };
+  socket.onclose = () => {
+    wsOk = false;
+    clearTimeout(fallback);
+    scheduleWSBadge(false);
+    startPolling();
+    setTimeout(startWS, 5000);
+  };
+  socket.onerror = () => { try { socket.close(); } catch (e) { /* 忽略 */ } };
+}
+
+function scheduleWSBadge(on) {
+  const el = $("#channel");
+  if (el) el.textContent = on ? "实时推送" : "定时刷新";
+}
+
+function applyStatus(s) {
+  const wasConnected = state.connected;
+  state.connected = !!s.connected;
+  if (s.config && Object.keys(s.config).length) state.config = s.config;
+  if (s.battery) state.battery = s.battery;
+  if (s.usage) state.usage = s.usage;
+  if (s.pwd) state.pwd = s.pwd;
+  if (s.addr) state.addr = s.addr;
+  state.cursor = s.cursor || 0;
+  state.lastError = s.error || "";
+
+  if (s.log && $("#tab-expert").classList.contains("active")) renderTrace(s.log);
+
+  if (wasConnected && !state.connected) {
+    state.cfgLoaded = false;
+    state.settable = {};
+    $("#cfgList").innerHTML = "";
+    toast("与相机的连接已断开", "bad");
+  }
+  if (!wasConnected && state.connected) toast("已连接相机", "ok");
+
+  updateUI();
+}
+
+/* ------------------------------ 界面刷新 ------------------------------ */
+function updateUI() {
+  const c = state.config || {};
+  const pill = $("#pill");
+  pill.textContent = state.connected ? "已连接" : "未连接";
+  pill.className = "pill" + (state.connected ? " on" : "");
+
+  $("#btnConnect").disabled = state.connected;
+  $("#btnDisconnect").disabled = !state.connected;
+  $("#stConn").textContent = state.connected ? (state.addr || "已连接") : "未连接";
+
+  const bat = state.battery || {};
+  if (bat.param !== undefined && bat.param !== "") {
+    $("#stBattery").textContent = (bat.type === "adapter" ? "充电中 " : "") + bat.param + "%";
+  } else {
+    $("#stBattery").textContent = "--";
+  }
+  const u = state.usage || {};
+  $("#stUsage").textContent = u.total
+    ? humanSize(u.total - u.free) + " / " + humanSize(u.total)
+    : "--";
+  const app = c.app_status || "";
+  $("#stApp").textContent = APP_STATUS[app] || app || "--";
+  $("#stSd").textContent = c.sd_card_status === "insert"
+    ? (c.sdcard_need_format && c.sdcard_need_format !== "no-need" ? "需要格式化" : "正常")
+    : (state.connected ? "未插入" : "--");
+
+  const warn = $("#warn");
+  if (!state.connected && state.lastError) {
+    warn.textContent = state.lastError;
+    warn.classList.add("show");
+  } else if (state.connected && c.sd_card_status && c.sd_card_status !== "insert") {
+    warn.textContent = "相机中未插入存储卡：拍照、录像与文件管理不可用。";
+    warn.classList.add("show");
+  } else if (state.connected && c.sdcard_need_format && c.sdcard_need_format !== "no-need") {
+    warn.textContent = "存储卡未格式化：请到「专家 / 日志」页格式化后再使用。";
+    warn.classList.add("show");
+  } else {
+    warn.classList.remove("show");
+  }
+
+  updateControl(c);
+}
+
+function updateControl(c) {
+  const mode = c.capture_mode || "precise quality";
+  const capturing = c.precise_cont_capturing === "on";
+  const recording = (c.app_status || "").includes("record");
+  state.recState = recording;
+
+  const photo = $("#btnPhoto");
+  let label = "拍一张<small>照片</small>";
+  if (mode === "precise quality cont.") label = capturing ? "停止<small>延时摄影</small>" : "开始<small>延时摄影</small>";
+  else if (mode === "burst quality") label = "连拍<small>照片</small>";
+  else if (mode === "precise self quality") label = "定时<small>拍照</small>";
+  if (photo.dataset.label !== label) { photo.innerHTML = label; photo.dataset.label = label; }
+  photo.disabled = !state.connected || recording;
+
+  const rec = $("#btnRecord");
+  const recLabel = recording ? "停止<small>录像</small>" : "开始<small>录像</small>";
+  if (rec.dataset.label !== recLabel) { rec.innerHTML = recLabel; rec.dataset.label = recLabel; }
+  rec.disabled = !state.connected || (mode === "precise quality cont." && capturing);
+
+  $("#btnStream").disabled = !state.connected;
+
+  const sel = $("#captureMode");
+  if (sel.value !== mode && document.activeElement !== sel) sel.value = mode;
+  $("#modeHint").textContent = {
+    "precise quality": "每按一次拍一张",
+    "precise quality cont.": "按间隔时间连续拍摄",
+    "burst quality": "按住连拍多张",
+    "precise self quality": "延迟后自动拍摄",
+  }[mode] || "";
+}
+
+function renderTrace(lines) {
+  const box = $("#logBox");
+  box.innerHTML = "";
+  (lines || []).forEach((t) => {
+    const cls = t.dir === "tx" ? "tx" : t.dir === "rx" ? "rx" : "ev";
+    box.insertAdjacentHTML("beforeend",
+      '<span class="' + cls + '">' + t.dir + " " + escapeHtml(t.text) + "</span>\n");
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function humanSize(v) {
+  v = Number(v) || 0;
+  const p = ["B", "kB", "MB", "GB", "TB"];
+  let i = 0;
+  while (v > 1024 && i < p.length - 1) { v /= 1024; i++; }
+  return v.toFixed(1) + p[i];
+}
+
+/* ------------------------------ 连接 ------------------------------ */
+async function connect() {
+  const addr = $("#ip").value.trim() || "192.168.42.1";
+  const port = parseInt($("#port").value, 10) || 7878;
+  localStorage.setItem("yi.addr", addr);
+  localStorage.setItem("yi.port", String(port));
+  $("#btnConnect").disabled = true;
+  $("#pill").textContent = "连接中…";
+  try {
+    const r = await api({ action: "connect", addr: addr, port: port });
+    state.connected = true;
+    state.addr = addr;
+    state.config = r.config || {};
+    state.cfgLoaded = false;
+    toast("已连接 " + addr, "ok");
+  } catch (e) {
+    $("#pill").textContent = "未连接";
+    toast(e.message, "bad");
+  } finally {
+    $("#btnConnect").disabled = state.connected;
+  }
+}
+
+$("#btnConnect").onclick = connect;
+$("#btnDisconnect").onclick = async () => {
+  try { await api({ action: "disconnect" }); } catch (e) { /* 忽略 */ }
+};
+
+/* ------------------------------ 拍摄 ------------------------------ */
+$("#btnPhoto").onclick = async () => {
+  try { await api({ action: "photo" }); toast("已下发拍照命令"); }
+  catch (e) { toast(e.message, "bad"); }
+};
+
+$("#btnRecord").onclick = async () => {
+  try {
+    await api({ action: state.recState ? "record_stop" : "record_start" });
+    toast(state.recState ? "已停止录像" : "开始录像");
+  } catch (e) { toast(e.message, "bad"); }
+};
+
+$("#btnStream").onclick = async () => {
+  try {
+    const r = await api({ action: "stream" });
+    $("#rtspBox").style.display = "flex";
+    $("#rtspUrl").value = r.rtsp;
+    await navigator.clipboard.writeText(r.rtsp).catch(() => {});
+    toast("已开启取流，RTSP 地址已复制", "ok");
+  } catch (e) { toast(e.message, "bad"); }
+};
+
+$("#btnCopyRtsp").onclick = () => {
+  navigator.clipboard.writeText($("#rtspUrl").value).then(
+    () => toast("已复制", "ok"),
+    () => toast("复制失败，请手动选择", "bad")
+  );
+};
+
+$("#captureMode").onchange = async (ev) => {
+  try {
+    await api({ action: "set", name: "capture_mode", value: ev.target.value });
+    toast("已切换拍摄模式");
+  } catch (e) { toast(e.message, "bad"); ev.target.value = state.config.capture_mode || "precise quality"; }
+};
+
+const zoom = $("#zoom");
+zoom.oninput = () => { $("#zoomVal").textContent = zoom.value; };
+zoom.onchange = async () => {
+  try { await api({ action: "zoom", level: Number(zoom.value) }); }
+  catch (e) { toast(e.message, "bad"); }
+};
+
+$("#btnInfo").onclick = async () => {
+  try {
+    const r = await api({ action: "info" });
+    const i = r.info;
+    toast("固件 " + i.sw_version + " / 硬件 " + i.hw_version + " / SN " + i.serial_number);
+  } catch (e) { toast(e.message, "bad"); }
+};
+$("#btnSyncClock").onclick = async () => {
+  try { await api({ action: "clock" }); toast("相机时钟已同步", "ok"); }
+  catch (e) { toast(e.message, "bad"); }
+};
+$("#btnBattery").onclick = async () => {
+  try { await api({ action: "battery" }); toast("已刷新电量"); } catch (e) { toast(e.message, "bad"); }
+};
+$("#btnUsage").onclick = async () => {
+  try { await api({ action: "usage" }); toast("已刷新容量"); } catch (e) { toast(e.message, "bad"); }
+};
+
+/* ------------------------------ 配置页 ------------------------------ */
+async function loadSettable() {
+  if (!state.connected) { toast("请先连接相机"); return; }
+  const st = $("#cfgStatus");
+  st.textContent = "正在读取相机可设置项…";
+  $("#btnReloadCfg").disabled = true;
+  try {
+    const r = await api({ action: "settable" });
+    state.settable = r.settable || {};
+    state.config = Object.assign(state.config, r.config || {});
+    state.cfgLoaded = true;
+    state.pending.clear();
+    renderConfig();
+    st.textContent = "共 " + Object.keys(state.settable).length + " 个可设置参数";
+  } catch (e) {
+    st.textContent = "读取失败：" + e.message;
+    toast(e.message, "bad");
+  } finally {
+    $("#btnReloadCfg").disabled = false;
+  }
+}
+
+function renderConfig() {
+  const wrap = $("#cfgList");
+  wrap.innerHTML = "";
+  const names = Object.keys(state.settable).sort();
+  names.forEach((name) => {
+    const cur = state.config[name];
+    const opts = state.settable[name] || [];
+
+    const row = document.createElement("div");
+    row.className = "cfg-row";
+
+    const nm = document.createElement("div");
+    nm.className = "cfg-name";
+    nm.textContent = name;
+
+    const ctl = document.createElement("div");
+    ctl.className = "cfg-ctl";
+
+    const hint = document.createElement("div");
+    hint.className = "cfg-hint";
+    hint.textContent = DESC[name] || "未知配置项";
+
+    const markChanged = () => {
+      state.pending.set(name, true);
+      row.classList.add("changed");
+      $("#btnApply").disabled = state.pending.size === 0;
+    };
+
+    if (name === "camera_clock") {
+      const btn = document.createElement("button");
+      btn.textContent = "同步为本机时间";
+      btn.onclick = async () => {
+        try { await api({ action: "clock" }); toast("相机时钟已同步", "ok"); } catch (e) { toast(e.message, "bad"); }
+      };
+      ctl.appendChild(btn);
+      hint.textContent = DESC.camera_clock + "（当前：" + (cur || "-") + "）";
+    } else if (opts.length === 0) {
+      const inp = document.createElement("input");
+      inp.value = cur === undefined ? "" : cur;
+      inp.placeholder = "可自由填写";
+      inp.oninput = () => { ctl._value = inp.value; markChanged(); };
+      ctl.appendChild(inp);
+    } else if (opts.length === 2 && opts.includes("on") && opts.includes("off")) {
+      const sel = document.createElement("select");
+      opts.forEach((o) => {
+        const op = document.createElement("option");
+        op.value = o; op.textContent = pretty(o);
+        sel.appendChild(op);
+      });
+      sel.value = opts.includes(cur) ? cur : opts[0];
+      sel.onchange = () => { ctl._value = sel.value; markChanged(); };
+      ctl.appendChild(sel);
+    } else if (opts.length <= 3) {
+      opts.forEach((o) => {
+        const lab = document.createElement("label");
+        lab.style.cssText = "display:flex;align-items:center;gap:5px;margin-right:8px";
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "cfg_" + name;
+        radio.value = o;
+        radio.style.width = "auto";
+        radio.checked = (o === cur);
+        radio.onchange = () => { ctl._value = o; markChanged(); };
+        lab.appendChild(radio);
+        lab.appendChild(document.createTextNode(pretty(o)));
+        ctl.appendChild(lab);
+      });
+    } else {
+      const sel = document.createElement("select");
+      opts.forEach((o) => {
+        const op = document.createElement("option");
+        op.value = o; op.textContent = pretty(o);
+        sel.appendChild(op);
+      });
+      if (opts.includes(cur)) sel.value = cur;
+      sel.onchange = () => { ctl._value = sel.value; markChanged(); };
+      ctl.appendChild(sel);
+    }
+
+    // 记录读取控件当前值的方法
+    row._getValue = () => {
+      if (ctl._value !== undefined) return ctl._value;
+      const inp = ctl.querySelector("input[type=text],input:not([type])");
+      if (inp) return inp.value;
+      const sel = ctl.querySelector("select");
+      if (sel) return sel.value;
+      const radio = ctl.querySelector("input[type=radio]:checked");
+      return radio ? radio.value : "";
+    };
+
+    row.appendChild(nm);
+    row.appendChild(ctl);
+    row.appendChild(hint);
+    wrap.appendChild(row);
+  });
+  $("#btnApply").disabled = true;
+}
+
+$("#btnApply").onclick = async () => {
+  const rows = Array.from(document.querySelectorAll("#cfgList .cfg-row"));
+  const todo = [];
+  rows.forEach((row) => {
+    if (!row.classList.contains("changed")) return;
+    todo.push({ name: row.querySelector(".cfg-name").textContent, value: row._getValue() });
+  });
+  if (!todo.length) return;
+  $("#btnApply").disabled = true;
+  let done = 0;
+  for (const item of todo) {
+    try {
+      await api({ action: "set", name: item.name, value: item.value });
+      done++;
+    } catch (e) {
+      toast(item.name + " 设置失败：" + e.message, "bad");
+      break;
+    }
+  }
+  toast("已应用 " + done + "/" + todo.length + " 项设置", done === todo.length ? "ok" : "bad");
+  await loadSettable();
+};
+
+$("#btnReloadCfg").onclick = loadSettable;
+
+/* ------------------------------ 文件页 ------------------------------ */
+async function loadFiles(action, name) {
+  if (!state.connected) { toast("请先连接相机"); return; }
+  $("#fileStatus").textContent = "读取中…";
+  try {
+    const r = action === "cd"
+      ? await api({ action: "cd", name: name })
+      : await api({ action: "ls", path: state.pwd });
+    state.pwd = r.pwd || state.pwd;
+    state.entries = r.entries || [];
+    renderFiles();
+    $("#fileStatus").textContent = state.entries.length + " 项";
+  } catch (e) {
+    $("#fileStatus").textContent = "读取失败";
+    toast(e.message, "bad");
+  }
+}
+
+function renderFiles() {
+  $("#filePath").textContent = state.pwd;
+  const body = $("#fileBody");
+  body.innerHTML = "";
+  const list = state.entries.slice().sort((a, b) => {
+    const k = state.sort.key;
+    let r = 0;
+    if (a.dir !== b.dir) return a.dir ? -1 : 1;
+    if (k === "size") r = a.size - b.size;
+    else r = String(a[k]).localeCompare(String(b[k]));
+    return r * state.sort.dir;
+  });
+  list.forEach((f) => {
+    const tr = document.createElement("tr");
+    const nameCell = document.createElement("span");
+    nameCell.className = "fname" + (f.dir ? " dir" : "");
+    nameCell.textContent = f.name;
+    nameCell.onclick = () => { f.dir ? loadFiles("cd", f.name) : download(f.name); };
+
+    tr.innerHTML = '<td><input type="checkbox" class="pick" style="width:auto"></td>' +
+      "<td>" + escapeHtml(f.type) + "</td><td></td><td>" +
+      escapeHtml(f.sizeText || "") + "</td><td>" + escapeHtml(f.date || "") + "</td>";
+    tr.children[2].appendChild(nameCell);
+    tr._file = f;
+    body.appendChild(tr);
+  });
+}
+
+function picked() {
+  return Array.from(document.querySelectorAll("#fileBody .pick:checked"))
+    .map((cb) => cb.closest("tr")._file).filter(Boolean);
+}
+
+function download(name) {
+  const url = "api/download?dir=" + encodeURIComponent(state.pwd) + "&name=" + encodeURIComponent(name);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  toast("开始下载 " + name);
+}
+
+$("#btnUp").onclick = () => loadFiles("cd", "../");
+$("#btnRefreshFiles").onclick = () => loadFiles("ls");
+$("#checkAll").onchange = (e) => {
+  document.querySelectorAll("#fileBody .pick").forEach((cb) => { cb.checked = e.target.checked; });
+};
+$("#btnDownload").onclick = () => {
+  const files = picked().filter((f) => !f.dir);
+  if (!files.length) return toast("请先勾选要下载的文件");
+  files.forEach((f, i) => setTimeout(() => download(f.name), i * 400));
+};
+$("#btnDelete").onclick = async () => {
+  const files = picked();
+  if (!files.length) return toast("请先勾选要删除的文件");
+  const names = files.map((f) => f.name);
+  if (!confirm("确定删除以下 " + names.length + " 项？\n\n" + names.join("\n") + "\n\n此操作无法撤销！")) return;
+  try {
+    const r = await api({ action: "delete", names: names });
+    state.pwd = r.pwd; state.entries = r.entries || [];
+    renderFiles();
+    toast("已删除", "ok");
+  } catch (e) { toast(e.message, "bad"); }
+};
+
+$("#btnUpload").onclick = () => $("#uploadInput").click();
+$("#uploadInput").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  $("#fileStatus").textContent = "上传中：" + file.name;
+  $("#btnUpload").disabled = true;
+  try {
+    const url = "api/upload?dir=" + encodeURIComponent(state.pwd) + "&name=" + encodeURIComponent(file.name);
+    const r = await fetch(url, { method: "POST", body: file });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || "上传失败");
+    state.entries = j.entries || [];
+    renderFiles();
+    toast("上传完成", "ok");
+  } catch (err) {
+    toast(err.message, "bad");
+  } finally {
+    $("#btnUpload").disabled = false;
+    e.target.value = "";
+    $("#fileStatus").textContent = "";
+  }
+};
+
+document.querySelectorAll("table.files th[data-sort]").forEach((th) => {
+  th.onclick = () => {
+    const key = th.dataset.sort;
+    if (state.sort.key === key) state.sort.dir *= -1;
+    else state.sort = { key: key, dir: key === "date" || key === "size" ? -1 : 1 };
+    renderFiles();
+  };
+});
+
+/* ------------------------------ 专家页 ------------------------------ */
+function confirmDo(text, fn) {
+  if (confirm(text)) fn();
+}
+
+$("#btnFormat").onclick = () => confirmDo(
+  "确定要格式化存储卡吗？\n\n此操作无法撤销，所有照片和视频都会丢失！",
+  async () => {
+    try { await api({ action: "format" }); toast("格式化完成", "ok"); }
+    catch (e) { toast(e.message, "bad"); }
+  });
+
+$("#btnReboot").onclick = () => confirmDo(
+  "确定要重启相机吗？\n\n重启期间连接会断开。",
+  async () => {
+    try { await api({ action: "reboot" }); toast("重启命令已下发"); }
+    catch (e) { toast(e.message, "bad"); }
+  });
+
+$("#btnFactory").onclick = () => confirmDo(
+  "确定要恢复出厂设置吗？\n\n相机内的所有设置都会被重置，连接会断开。",
+  async () => {
+    try { await api({ action: "factory" }); toast("恢复出厂命令已下发"); }
+    catch (e) { toast(e.message, "bad"); }
+  });
+
+$("#btnTelnet").onclick = () => confirmDo(
+  "启用 Telnet 后需要重启相机才生效，是否继续？",
+  async () => {
+    try { await api({ action: "telnet" }); toast("已写入 Telnet 启用脚本，重启相机后生效", "ok"); }
+    catch (e) { toast(e.message, "bad"); }
+  });
+
+$("#btnVars").onclick = async () => {
+  try {
+    const r = await api({ action: "variables" });
+    const keys = Object.keys(r.variables || {}).sort();
+    $("#varsBox").textContent = keys.map((k) => k + ": " + r.variables[k]).join("\n") || "（无数据）";
+  } catch (e) { toast(e.message, "bad"); }
+};
+
+$("#btnLogRefresh").onclick = async () => {
+  try {
+    const s = await (await fetch("api/status?after=" + state.cursor, { cache: "no-store" })).json();
+    if (s.log) renderTrace(s.log);
+    toast("日志已刷新");
+  } catch (e) { toast("刷新失败：" + e.message, "bad"); }
+};
+$("#btnLogClear").onclick = () => { $("#logBox").innerHTML = ""; };
+
+/* ------------------------------ 标签页 ------------------------------ */
+document.querySelectorAll("nav button").forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll("nav button").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
+    btn.classList.add("active");
+    $("#tab-" + btn.dataset.tab).classList.add("active");
+    const tab = btn.dataset.tab;
+    if (tab === "config" && state.connected && !state.cfgLoaded) loadSettable();
+    if (tab === "files" && state.connected) loadFiles("ls");
+    if (tab === "control" && state.connected) {
+      api({ action: "zoom_get" }).then((r) => {
+        zoom.value = r.level;
+        $("#zoomVal").textContent = r.level;
+      }).catch(() => {});
+    }
+  };
+});
+
+/* ------------------------------ 启动 ------------------------------ */
+(function boot() {
+  const addr = localStorage.getItem("yi.addr");
+  const port = localStorage.getItem("yi.port");
+  if (addr) $("#ip").value = addr;
+  if (port) $("#port").value = port;
+  $("#ip").addEventListener("keydown", (e) => { if (e.key === "Enter") connect(); });
+  updateUI();
+  startWS();
+})();
+</script>
+</body>
+</html>

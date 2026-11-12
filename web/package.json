@@ -1,0 +1,18 @@
+{
+  "name": "xiaomi-yi-web-console",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "小蚁运动相机 Web 控制台：浏览器界面 + 本地 TCP 桥接服务",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "serve": "node server.mjs --no-browser"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
